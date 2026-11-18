@@ -2,7 +2,7 @@
 
 // Cached hardware specs
 let cachedSpecs = null;
-export const EXPECTED_SERVER_BUILD = "school-cpu-v1";
+export const EXPECTED_SERVER_BUILD = "school-cpu-v2";
 
 export const isLocalServerMode = () => {
   if (typeof window === "undefined") return false;

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "if_sara",
+    "name": "Sara",
+    "language": "it-IT",
+    "gender": "Femminile",
+    "recommended": true
+  },
+  {
+    "id": "im_nicola",
+    "name": "Nicola",
+    "language": "it-IT",
+    "gender": "Maschile",
+    "recommended": false
+  }
+]

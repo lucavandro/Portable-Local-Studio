@@ -11,7 +11,7 @@ Le elaborazioni AI avvengono sul computer: nessuna API a pagamento, chiave API o
 | Chat locale                                | Prompt, confronto delle risposte, temperatura, limiti e errori dei modelli |
 | Documenti di testo, codice e PDF con testo | Analisi di brevi estratti, spiegazioni e classificazione                   |
 | Trascrizione con Whisper Tiny/Base         | Registrazioni brevi, riconoscimento multilingue incluso l’italiano         |
-| Sintesi vocale con Kokoro Q8               | Lettura del testo con le voci inglesi incluse                              |
+| Sintesi vocale con Kokoro Q8               | Lettura del testo con le voci italiane Sara e Nicola incluse               |
 | Cronologia locale ed esportazioni          | Conservare conversazioni, trascrizioni e file audio                        |
 | CPU e RAM                                  | Osservare le risorse e i tempi delle attività                              |
 
@@ -26,7 +26,7 @@ Su Windows 10/11 a 64 bit avvia `windows.bat`. Su Linux avvia `./linux.sh`, su m
 1. Apri **Modelli → Chat** e scarica **Qwen 2.5 0.5B Instruct Q4_K_M**, oppure importa il file GGUF già scaricato.
 2. Per confrontare due modelli usa anche **Qwen 2.5 1.5B Instruct Q4_K_M**. Il secondo modello può risultare più lento; misuralo sul computer reale.
 3. In **Modelli → Trascrizione** scarica **Whisper Tiny multilingue**. Base e Base Q5 sono alternative per il confronto.
-4. In **Modelli → Voce** prepara **Kokoro Q8**. Esegui una breve lettura con ogni voce che userai: pesi e voci vengono scaricati al primo utilizzo e conservati nella cache locale.
+4. In **Modelli → Voce** prepara **Kokoro Q8** e scegli **Sara** (predefinita) o **Nicola**, entrambe italiane. Esegui una breve lettura con ogni voce che userai: pesi e voci vengono scaricati al primo utilizzo e conservati nella cache locale.
 5. Disconnetti Internet e prova chat, trascrizione e voce prima di distribuire la cartella sugli altri PC con lo stesso sistema operativo.
 
 L’interfaccia si apre su `http://localhost:1420`; l’avvio sceglie un’altra porta se occupata. Ogni PC conserva i propri dati. Non è un server multiutente per la classe e non richiede un account degli studenti.
@@ -60,3 +60,7 @@ I test coprono streaming della chat, persistenza, riconoscimento dei formati, AP
 ## Licenza
 
 Il codice mantiene la licenza MIT e l’attribuzione del progetto originale in [LICENSE](LICENSE). Modelli e runtime hanno licenze proprie; il catalogo usa download pubblici gratuiti.
+
+Per aggiornare una vecchia installazione vocale, avvia nuovamente il launcher: rileva e installa il fonemizzatore italiano mancante. Il runtime include eSpeak NG multilingue (`@echogarden/espeak-ng-emscripten`, GPL-3.0), senza installazioni globali. Le vecchie registrazioni restano riproducibili; le preferenze di una voce inglese passano a Sara.
+
+Verifica v0.2.1 (18 novembre 2026): 32 test superati, build e controlli statici riusciti. Sono stati generati due audio reali con Kokoro Q8 su CPU (Sara: 5,575 s; Nicola: 6 s), con un testo italiano di prova; Nicola è stato verificato con download remoti disabilitati e soli pesi in cache. La velocità sui portatili del laboratorio resta da misurare.

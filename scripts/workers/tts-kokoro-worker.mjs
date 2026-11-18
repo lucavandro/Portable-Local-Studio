@@ -1,8 +1,10 @@
 import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { generateItalianAudio } from "./tts-italian.mjs";
+import { normalizeTtsVoice } from "../../app/frontend/src/utils/ttsVoice.js";
 
-const require = createRequire(import.meta.url);
 
 function readStdin() {
   return new Promise((resolve, reject) => {
@@ -17,15 +19,10 @@ function readStdin() {
 function resolveRuntimePackage(name) {
   const runtime = process.env.TTS_RUNTIME || "";
   if (runtime) {
-    const pkg = path.join(runtime, "node_modules", name, "dist", "kokoro.js");
-    return pathToFileUrl(pkg);
+    const runtimeRequire = createRequire(path.join(runtime, "package.json"));
+    return pathToFileURL(runtimeRequire.resolve(name)).href;
   }
   return name;
-}
-
-function pathToFileUrl(filePath) {
-  const resolved = path.resolve(filePath).replace(/\\/g, "/");
-  return `file:///${resolved.replace(/^\/+/, "")}`;
 }
 
 // Kokoro truncates one call at ~510 tokens, so long text is spoken a sentence at a time and joined.
@@ -88,6 +85,13 @@ async function main() {
 
   const kokoro = await import(resolveRuntimePackage("kokoro-js"));
   const { KokoroTTS } = kokoro;
+  const transformers = await import(resolveRuntimePackage("@huggingface/transformers"));
+  const { env } = transformers.default || transformers;
+  if (payload.cacheDir) env.cacheDir = payload.cacheDir;
+  if (process.env.HF_HUB_OFFLINE === "1") env.allowRemoteModels = false;
+  const { default: createEspeak } = await import(resolveRuntimePackage("@echogarden/espeak-ng-emscripten"));
+  const espeakModule = await createEspeak();
+  const espeak = await new espeakModule.eSpeakNGWorker();
 
   const tts = await KokoroTTS.from_pretrained(payload.modelId, {
     dtype: payload.dtype || "q8",
@@ -98,8 +102,8 @@ async function main() {
   let first = null;
   for (let i = 0; i < chunks.length; i++) {
     reportProgress({ phase: "speaking", done: i, total: chunks.length });
-    const audio = await tts.generate(chunks[i], {
-      voice: payload.voice || "af_heart",
+    const audio = await generateItalianAudio(tts, espeak, chunks[i], {
+      voice: normalizeTtsVoice(payload.voice),
       speed: Number(payload.speed) || 1,
     });
     first = first || audio;
@@ -125,7 +129,7 @@ async function main() {
   const combined = new first.constructor(joined, sampleRate);
 
   await fs.mkdir(path.dirname(payload.output), { recursive: true });
-  combined.save(payload.output);
+  await combined.save(payload.output);
   process.stdout.write(JSON.stringify({
     ok: true,
     output: payload.output,

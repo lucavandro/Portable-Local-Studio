@@ -143,9 +143,9 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       )}
       {mode === "tts" && (
         <p>
-          Kokoro Q8 legge su CPU con voci inglesi. Pesi e voci vengono
-          conservati al primo utilizzo: esegui una lettura di prova prima di
-          lavorare offline.
+          Kokoro Q8 legge su CPU con voci italiane Sara e Nicola. Pesi e voci
+          vengono conservati al primo utilizzo: esegui una lettura di prova
+          prima di lavorare offline.
         </p>
       )}
       {(error || download.error) && (

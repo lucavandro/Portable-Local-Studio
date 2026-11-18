@@ -1,3 +1,4 @@
+import { DEFAULT_TTS_VOICE, normalizeTtsVoice } from "./utils/ttsVoice";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Sidebar from "./components/Sidebar";
 import TopStatusBar from "./components/TopStatusBar";
@@ -226,14 +227,14 @@ function App() {
         const parsed = JSON.parse(saved);
         return {
           model: parsed.model || "",
-          voice: parsed.voice || "af_heart",
+          voice: normalizeTtsVoice(parsed.voice),
           speed: Math.max(0.5, Math.min(2, Number(parsed.speed) || 1)),
         };
       } catch (_) {}
     }
     return {
       model: "",
-      voice: "af_heart",
+      voice: DEFAULT_TTS_VOICE,
       speed: 1,
     };
   });

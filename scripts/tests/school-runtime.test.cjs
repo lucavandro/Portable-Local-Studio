@@ -186,6 +186,12 @@ test("school catalogs retain lightweight multilingual speech and quantized voice
   const voice = (await request("/api/tts/models")).body.models;
   assert.equal(voice.length, 1);
   assert.equal(voice[0].dtype, "q8");
+  const ttsStatus = (await request("/api/tts/status")).body;
+  assert.equal(ttsStatus.settings.voice, "if_sara");
+  assert.deepEqual(
+    ttsStatus.voices.map((entry) => entry.id),
+    ["if_sara", "im_nicola"],
+  );
 });
 
 test("school chat persists conversations and allows deletion", async (t) => {

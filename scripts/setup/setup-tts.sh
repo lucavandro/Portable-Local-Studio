@@ -57,9 +57,9 @@ if [[ ! -x "$NODE_BIN" || ! -x "$NPM_BIN" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$RUNTIME_DIR/package.json" ]] || ! grep -q "node-addon-api" "$RUNTIME_DIR/package.json"; then
+if [[ ! -f "$RUNTIME_DIR/package.json" ]] || ! grep -q "@echogarden/espeak-ng-emscripten" "$RUNTIME_DIR/package.json"; then
   cat > "$RUNTIME_DIR/package.json" <<'JSON'
-{"private":true,"type":"module","dependencies":{"kokoro-js":"^1.2.1","node-addon-api":"^7.1.1","node-gyp":"^10.0.0"}}
+{"private":true,"type":"module","dependencies":{"kokoro-js":"1.2.1","@echogarden/espeak-ng-emscripten":"0.3.5","node-addon-api":"^7.1.1","node-gyp":"^10.0.0"}}
 JSON
   rm -f "$RUNTIME_DIR/package-lock.json"
 fi

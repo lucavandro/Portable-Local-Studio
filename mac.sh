@@ -28,6 +28,7 @@ else
   LLM_BACKEND_PATH="$APP_DIR/llm-backend/mac/x64/llama-server"
 fi
 TTS_RUNTIME_PATH="$APP_DIR/tts-runtime/node_modules/kokoro-js"
+TTS_PHONEMIZER_PATH="$APP_DIR/tts-runtime/node_modules/@echogarden/espeak-ng-emscripten"
 SPEECH_BACKEND_PATH="$APP_DIR/speech-backend/mac/cpu/whisper-cli"
 PLATFORM_LABEL="macOS"
 
@@ -157,7 +158,7 @@ fi
 if [[ ! -x "$LLM_BACKEND_PATH" ]]; then
   SETUP_REASON="No macOS llama.cpp text backend is installed."
 fi
-if [[ ! -d "$TTS_RUNTIME_PATH" ]]; then
+if [[ ! -d "$TTS_RUNTIME_PATH" || ! -d "$TTS_PHONEMIZER_PATH" ]]; then
   SETUP_REASON="Kokoro text-to-speech runtime is missing."
 fi
 if [[ ! -x "$SPEECH_BACKEND_PATH" ]]; then

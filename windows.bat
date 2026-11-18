@@ -11,6 +11,7 @@ set SETUP=%~dp0scripts\setup\setup.ps1
 set LLM_CPU_BACKEND=%APP%\llm-backend\win\cpu\llama-server.exe
 set SPEECH_BACKEND=%APP%\speech-backend\win\cpu\whisper-cli.exe
 set TTS_RUNTIME=%APP%\tts-runtime\node_modules\kokoro-js
+set TTS_PHONEMIZER=%APP%\tts-runtime\node_modules\@echogarden\espeak-ng-emscripten
 set SERVE=%~dp0scripts\server\serve.cjs
 if "%FRONTEND_PORT%"=="" set FRONTEND_PORT=1420
 if "%LLM_PORT%"=="" set LLM_PORT=10086
@@ -37,6 +38,10 @@ if not exist "%LLM_CPU_BACKEND%" (
 )
 if not exist "%SPEECH_BACKEND%" (
     set SETUP_REASON=whisper.cpp speech backend is missing.
+    goto :run_setup
+)
+if not exist "%TTS_PHONEMIZER%" (
+    set SETUP_REASON=Italian pronunciation runtime is missing.
     goto :run_setup
 )
 if not exist "%TTS_RUNTIME%" (

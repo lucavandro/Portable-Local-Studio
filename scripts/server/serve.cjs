@@ -32,7 +32,7 @@ let PORT_LLM = PREFERRED_LLM_PORT;
 let PORT_SPEECH = PREFERRED_SPEECH_PORT;
 let PORT_TTS = PREFERRED_TTS_PORT;
 const MAX_JSON_BODY_BYTES = 64 * 1024 * 1024;
-const SERVER_BUILD = "school-cpu-v1";
+const SERVER_BUILD = "school-cpu-v2";
 const ROOT = path.join(__dirname, "..", "..");
 const DIST = path.join(ROOT, "app", "dist");
 
@@ -149,64 +149,13 @@ const TTS_MODEL_CATALOG = [
     recommended: true,
   },
 ];
-const TTS_VOICES = [
-  {
-    id: "af_heart",
-    name: "Heart",
-    language: "en-us",
-    gender: "Female",
-    recommended: true,
-  },
-  {
-    id: "af_bella",
-    name: "Bella",
-    language: "en-us",
-    gender: "Female",
-    recommended: false,
-  },
-  {
-    id: "af_nicole",
-    name: "Nicole",
-    language: "en-us",
-    gender: "Female",
-    recommended: false,
-  },
-  {
-    id: "af_sarah",
-    name: "Sarah",
-    language: "en-us",
-    gender: "Female",
-    recommended: false,
-  },
-  {
-    id: "am_michael",
-    name: "Michael",
-    language: "en-us",
-    gender: "Male",
-    recommended: false,
-  },
-  {
-    id: "am_fenrir",
-    name: "Fenrir",
-    language: "en-us",
-    gender: "Male",
-    recommended: false,
-  },
-  {
-    id: "bf_emma",
-    name: "Emma",
-    language: "en-gb",
-    gender: "Female",
-    recommended: false,
-  },
-  {
-    id: "bm_george",
-    name: "George",
-    language: "en-gb",
-    gender: "Male",
-    recommended: false,
-  },
-];
+const TTS_VOICES = require("../../app/frontend/src/config/tts-voices.json");
+const DEFAULT_TTS_VOICE = TTS_VOICES[0].id;
+function normalizeTtsVoice(voice) {
+  return TTS_VOICES.some((entry) => entry.id === voice)
+    ? voice
+    : DEFAULT_TTS_VOICE;
+}
 let llmProc = null;
 let llmProcSeq = 0;
 let llmReady = false;
@@ -235,7 +184,7 @@ let ttsError = null;
 
 let ttsSettings = {
   model: null,
-  voice: "af_heart",
+  voice: DEFAULT_TTS_VOICE,
   speed: 1,
   dtype: "q8",
   backendMode: "Kokoro ONNX",
@@ -963,7 +912,12 @@ function getTtsRuntimeStatus() {
   const nodeModules = path.join(TTS_RUNTIME, "node_modules");
   const installed = fs.existsSync(path.join(nodeModules, "kokoro-js"));
   return {
-    installed: installed && fs.existsSync(TTS_WORKER),
+    installed:
+      installed &&
+      fs.existsSync(
+        path.join(nodeModules, "@echogarden", "espeak-ng-emscripten"),
+      ) &&
+      fs.existsSync(TTS_WORKER),
     worker: TTS_WORKER,
     runtime: TTS_RUNTIME,
     cache: TTS_CACHE,
@@ -993,7 +947,7 @@ async function startTts(settings = {}) {
   ttsSettings = {
     ...ttsSettings,
     model: model.filename,
-    voice: settings.voice || ttsSettings.voice || "af_heart",
+    voice: normalizeTtsVoice(settings.voice || ttsSettings.voice),
     speed: Math.max(
       0.5,
       Math.min(2, Number(settings.speed) || ttsSettings.speed || 1),
@@ -1206,7 +1160,7 @@ async function synthesizeTts(text, options = {}) {
       return;
     }
     const model = resolveTtsModel(options.model || ttsSettings.model);
-    const voice = String(options.voice || ttsSettings.voice || "af_heart");
+    const voice = normalizeTtsVoice(options.voice || ttsSettings.voice);
     const voiceInfo = TTS_VOICES.find((item) => item.id === voice) || {
       id: voice,
       name: voice,

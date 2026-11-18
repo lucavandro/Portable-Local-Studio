@@ -33,12 +33,12 @@ $packageJson = Join-Path $runtimeDir "package.json"
 $needsWrite = $true
 if (Test-Path $packageJson) {
     $content = Get-Content -Raw -Path $packageJson
-    if ($content -match "node-addon-api" -and $content -match "node-gyp") {
+    if ($content -match "node-addon-api" -and $content -match "node-gyp" -and $content -match "@echogarden/espeak-ng-emscripten") {
         $needsWrite = $false
     }
 }
 if ($needsWrite) {
-    '{"private":true,"type":"module","dependencies":{"kokoro-js":"^1.2.1","node-addon-api":"^7.1.1","node-gyp":"^10.0.0"}}' | Out-File -FilePath $packageJson -Encoding utf8
+    '{"private":true,"type":"module","dependencies":{"kokoro-js":"1.2.1","@echogarden/espeak-ng-emscripten":"0.3.5","node-addon-api":"^7.1.1","node-gyp":"^10.0.0"}}' | Out-File -FilePath $packageJson -Encoding utf8
     $packageLock = Join-Path $runtimeDir "package-lock.json"
     if (Test-Path $packageLock) {
         Remove-Item -Force $packageLock

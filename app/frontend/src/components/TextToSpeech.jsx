@@ -1,3 +1,4 @@
+import { ITALIAN_VOICES, normalizeTtsVoice } from "../utils/ttsVoice";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
@@ -35,13 +36,7 @@ import {
 import { createMicRecorder } from "../utils/audio";
 import "../styles/voice.css";
 
-const FALLBACK_VOICES = [
-  { id: "af_heart", name: "Heart", language: "en-us", gender: "Female" },
-  { id: "af_bella", name: "Bella", language: "en-us", gender: "Female" },
-  { id: "am_michael", name: "Michael", language: "en-us", gender: "Male" },
-  { id: "bf_emma", name: "Emma", language: "en-gb", gender: "Female" },
-  { id: "bm_george", name: "George", language: "en-gb", gender: "Male" },
-];
+const FALLBACK_VOICES = ITALIAN_VOICES;
 
 const MAX_CHARS = 5000;
 
@@ -227,7 +222,7 @@ export default function TextToSpeech({
 
   const installedModels = useMemo(() => models.filter((model) => model.installed), [models]);
   const voices = status.voices?.length ? status.voices : FALLBACK_VOICES;
-  const selectedVoice = ttsSettings?.voice || "af_heart";
+  const selectedVoice = normalizeTtsVoice(ttsSettings?.voice);
   const speed = ttsSettings?.speed || 1;
   const currentVoice = voices.find((voice) => voice.id === selectedVoice);
 
@@ -265,7 +260,7 @@ export default function TextToSpeech({
     if (!selectedOutput) return;
     setActiveId(clipId(selectedOutput));
     setText(selectedOutput.text || "");
-    if (selectedOutput.voice) updateTtsSetting("voice", selectedOutput.voice);
+    if (selectedOutput.voice) updateTtsSetting("voice", normalizeTtsVoice(selectedOutput.voice));
     if (selectedOutput.speed) updateTtsSetting("speed", selectedOutput.speed);
     if (selectedOutput.model) setSelectedModel(selectedOutput.model);
   }, [selectedOutput]);
@@ -1201,7 +1196,7 @@ export default function TextToSpeech({
           {clips.length === 0 && !isGenerating ? (
             <div className="empty-state voice-empty">
               <div className="empty-state-title">Leggi un testo ad alta voce</div>
-              <p>Scrivi un testo in inglese, scegli voce e velocità, poi premi Invio.</p>
+              <p>Scrivi un testo in italiano, scegli voce e velocità, poi premi Invio.</p>
             </div>
           ) : (
             <ul className="row-list voice-clip-list">

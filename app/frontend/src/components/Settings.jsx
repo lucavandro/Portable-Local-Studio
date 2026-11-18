@@ -104,8 +104,9 @@ export default function Settings({
           </select>
         </label>
         <p>
-          Kokoro Q8 usa voci inglesi. Apri Trascrivi o Voce per usare l’audio;
-          il modello chat viene scaricato dalla memoria quando serve.
+          Kokoro Q8 usa voci italiane Sara e Nicola. Apri Trascrivi o Voce per
+          usare l’audio; il modello chat viene scaricato dalla memoria quando
+          serve.
         </p>
       </div>
       <div className="school-card">
