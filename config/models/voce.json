@@ -1,0 +1,12 @@
+[
+  {
+    "id": "kokoro-onnx-q8",
+    "name": "Kokoro 82M ONNX Q8",
+    "filename": "kokoro-onnx-q8.json",
+    "modelId": "onnx-community/Kokoro-82M-v1.0-ONNX",
+    "dtype": "q8",
+    "size": "Cache locale",
+    "format": "Kokoro ONNX",
+    "recommended": true
+  }
+]

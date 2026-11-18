@@ -33,6 +33,10 @@ L’interfaccia si apre su `http://localhost:1420`; l’avvio sceglie un’altra
 
 Se una vecchia preparazione mostra «Get-IntelOpenVinoNpu non riconosciuto» dopo Kokoro, aggiorna la cartella del progetto e riavvia `windows.bat`. Era un controllo hardware rimasto dalla versione con OpenVINO, ora rimosso: non occorre installare OpenVINO, driver NPU o cancellare i modelli già scaricati. Il messaggio non indica un errore delle voci italiane.
 
+## Modificare i modelli consigliati
+
+I cataloghi sono nella cartella [`config/models/`](config/models/README.md): [`chat.json`](config/models/chat.json), [`trascrizione.json`](config/models/trascrizione.json) e [`voce.json`](config/models/voce.json). La guida nella cartella spiega i campi. Dopo una modifica riavvia l’app e ricarica la pagina; non serve ricompilare l’interfaccia.
+
 ## Profilo per 8 GB di RAM
 
 - Solo esecuzione su CPU, fino a 4 thread, contesto fino a 2.048 token e risposte fino a 512 token (384 iniziali).

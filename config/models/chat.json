@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Qwen 2.5 0.5B Instruct · leggero",
+    "filename": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "approxSize": "491 MB",
+    "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "notes": "Per le prime prove su CPU. Supporta l'italiano."
+  },
+  {
+    "name": "Qwen 2.5 1.5B Instruct · confronto",
+    "filename": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "approxSize": "1.12 GB",
+    "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "notes": "Più capace, con tempi di risposta da verificare sul PC."
+  }
+]

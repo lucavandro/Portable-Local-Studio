@@ -36,7 +36,7 @@ function gguf(architecture) {
   ]);
 }
 
-function loadRuntime(t) {
+function loadRuntime(t, catalogs = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), "school-studio-"));
   t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
   let handler;
@@ -58,6 +58,8 @@ function loadRuntime(t) {
     process: { ...process, env: {}, on() {}, exit() {} },
     module: { exports: {} },
     require(name) {
+      const catalog = name.match(/^\.\.\/\.\.\/config\/models\/(.+)\.json$/)?.[1];
+      if (catalog && catalogs[catalog]) return catalogs[catalog];
       if (name === "http")
         return {
           ...require("node:http"),
@@ -192,6 +194,31 @@ test("school catalogs retain lightweight multilingual speech and quantized voice
     ttsStatus.voices.map((entry) => entry.id),
     ["if_sara", "im_nicola"],
   );
+});
+
+test("model APIs use the separate JSON catalogs, including configured speech download URLs", async (t) => {
+  const catalogs = Object.fromEntries(["chat", "trascrizione", "voce"].map((name) => [
+    name,
+    JSON.parse(fs.readFileSync(path.join(root, "config/models", `${name}.json`), "utf8")),
+  ]));
+  catalogs.chat[0].name = "Modello scelto dal docente";
+  catalogs.chat[0].notes = "Una descrizione aggiornata nel catalogo.";
+  catalogs.trascrizione[0].url = "https://example.org/laboratorio/whisper.bin";
+  catalogs.voce[0].name = "Voce del laboratorio";
+  catalogs.voce[0].notes = "Indicazioni vocali del docente.";
+  const { request, folder } = loadRuntime(t, catalogs);
+  fs.writeFileSync(path.join(folder, "app/tts-models", catalogs.voce[0].filename), JSON.stringify({
+    ...catalogs.voce[0],
+    name: "Vecchio nome salvato durante l’installazione",
+    notes: "Vecchia descrizione",
+  }));
+  const chat = (await request("/api/hardware-specs")).body.recommended_models;
+  assert.deepEqual(chat, catalogs.chat);
+  const speech = (await request("/api/speech/models")).body.models;
+  assert.equal(speech[0].url, catalogs.trascrizione[0].url);
+  const voice = (await request("/api/tts/models")).body.models;
+  assert.equal(voice[0].name, catalogs.voce[0].name);
+  assert.equal(voice[0].notes, catalogs.voce[0].notes);
 });
 
 test("school chat persists conversations and allows deletion", async (t) => {

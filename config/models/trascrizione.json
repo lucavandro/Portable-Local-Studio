@@ -1,0 +1,29 @@
+[
+  {
+    "id": "tiny",
+    "name": "Whisper Tiny · multilingue",
+    "filename": "ggml-tiny.bin",
+    "size": "75 MB",
+    "language": "Multilingual",
+    "recommended": true,
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin"
+  },
+  {
+    "id": "base",
+    "name": "Whisper Base · multilingue",
+    "filename": "ggml-base.bin",
+    "size": "142 MB",
+    "language": "Multilingual",
+    "recommended": false,
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
+  },
+  {
+    "id": "base-q5_1",
+    "name": "Whisper Base Q5 · multilingue",
+    "filename": "ggml-base-q5_1.bin",
+    "size": "57 MB",
+    "language": "Multilingual",
+    "recommended": false,
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base-q5_1.bin"
+  }
+]

@@ -111,44 +111,9 @@ const TTS_WORKER = path.join(
 );
 const SPEECH_BACKEND_ROOT = path.join(ROOT, "app", "speech-backend");
 
-const SPEECH_MODEL_CATALOG = [
-  {
-    id: "tiny",
-    name: "Whisper Tiny · multilingue",
-    filename: "ggml-tiny.bin",
-    size: "75 MB",
-    language: "Multilingual",
-    recommended: true,
-  },
-  {
-    id: "base",
-    name: "Whisper Base · multilingue",
-    filename: "ggml-base.bin",
-    size: "142 MB",
-    language: "Multilingual",
-    recommended: false,
-  },
-  {
-    id: "base-q5_1",
-    name: "Whisper Base Q5 · multilingue",
-    filename: "ggml-base-q5_1.bin",
-    size: "57 MB",
-    language: "Multilingual",
-    recommended: false,
-  },
-];
-const TTS_MODEL_CATALOG = [
-  {
-    id: "kokoro-onnx-q8",
-    name: "Kokoro 82M ONNX Q8",
-    filename: "kokoro-onnx-q8.json",
-    modelId: "onnx-community/Kokoro-82M-v1.0-ONNX",
-    dtype: "q8",
-    size: "Cache locale",
-    format: "Kokoro ONNX",
-    recommended: true,
-  },
-];
+const CHAT_MODEL_CATALOG = require("../../config/models/chat.json");
+const SPEECH_MODEL_CATALOG = require("../../config/models/trascrizione.json");
+const TTS_MODEL_CATALOG = require("../../config/models/voce.json");
 const TTS_VOICES = require("../../app/frontend/src/config/tts-voices.json");
 const DEFAULT_TTS_VOICE = TTS_VOICES[0].id;
 function normalizeTtsVoice(voice) {
@@ -368,22 +333,7 @@ function getHardwareSpecs() {
       gpuLayers: 0,
       preferredBackend: "cpu",
     },
-    recommended_models: [
-      {
-        name: "Qwen 2.5 0.5B Instruct · leggero",
-        filename: "qwen2.5-0.5b-instruct-q4_k_m.gguf",
-        approxSize: "491 MB",
-        url: "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-        notes: "Per le prime prove su CPU. Supporta l'italiano.",
-      },
-      {
-        name: "Qwen 2.5 1.5B Instruct · confronto",
-        filename: "qwen2.5-1.5b-instruct-q4_k_m.gguf",
-        approxSize: "1.12 GB",
-        url: "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
-        notes: "Più capace, con tempi di risposta da verificare sul PC.",
-      },
-    ],
+    recommended_models: CHAT_MODEL_CATALOG,
   };
 }
 
@@ -756,7 +706,6 @@ function getSpeechModels() {
       installed,
       sizeBytes: installed ? getPathSize(modelPath) : 0,
       localSize: installed ? formatBytes(getPathSize(modelPath)) : "",
-      url: `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${model.filename}`,
     };
   });
 
@@ -852,9 +801,8 @@ function getTtsModels() {
     const manifestPath = getTtsManifestPath(model.filename);
     const sizeBytes = installed ? getPathSize(manifestPath) : 0;
     return {
-      ...model,
       ...(manifest || {}),
-      notes: model.notes,
+      ...model,
       installed,
       sizeBytes,
       localSize: installed ? formatBytes(sizeBytes) : "",
@@ -3106,7 +3054,7 @@ const server = http.createServer(async (req, res) => {
     const url = body.url
       ? String(body.url)
       : catalogModel
-        ? `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${catalogModel.filename}`
+        ? catalogModel.url
         : "";
     const filename = path.basename(
       String(body.filename || catalogModel?.filename || ""),
