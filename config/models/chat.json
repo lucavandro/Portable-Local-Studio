@@ -1,16 +1,422 @@
 [
   {
-    "name": "Qwen 2.5 0.5B Instruct · leggero",
-    "filename": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
-    "approxSize": "491 MB",
-    "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-    "notes": "Per le prime prove su CPU. Supporta l'italiano."
+    "id": "minicpm5-1b-gguf",
+    "name": "MiniCPM5 1B",
+    "repository": "openbmb/MiniCPM5-1B-GGUF",
+    "multimodal": false,
+    "reasoning": true,
+    "uncensored": false,
+    "notes": "Il più leggero del catalogo: confronta istruzioni, codice e tempi su CPU. È orientato soprattutto a inglese e cinese; verifica le risposte in italiano.",
+    "preferredQuantization": "Q4_K_M",
+    "variants": [
+      {
+        "quantization": "Q4_K_M",
+        "filename": "MiniCPM5-1B-Q4_K_M.gguf",
+        "sizeBytes": 688065920,
+        "approxSize": "0.64 GiB",
+        "url": "https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/5385560dd3e232bcc3577fd9442c332cad2facbd/MiniCPM5-1B-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q8_0",
+        "filename": "MiniCPM5-1B-Q8_0.gguf",
+        "sizeBytes": 1153529216,
+        "approxSize": "1.07 GiB",
+        "url": "https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/5385560dd3e232bcc3577fd9442c332cad2facbd/MiniCPM5-1B-Q8_0.gguf"
+      },
+      {
+        "quantization": "F16",
+        "filename": "MiniCPM5-1B-F16.gguf",
+        "sizeBytes": 2166551936,
+        "approxSize": "2.02 GiB",
+        "url": "https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/5385560dd3e232bcc3577fd9442c332cad2facbd/MiniCPM5-1B-F16.gguf"
+      }
+    ],
+    "sourceRevision": "5385560dd3e232bcc3577fd9442c332cad2facbd",
+    "verifiedAt": "2026-11-18T22:15:08.601Z"
   },
   {
-    "name": "Qwen 2.5 1.5B Instruct · confronto",
-    "filename": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
-    "approxSize": "1.12 GB",
-    "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf",
-    "notes": "Più capace, con tempi di risposta da verificare sul PC."
+    "id": "minicpm5-2b-gguf",
+    "name": "MiniCPM5 2B",
+    "repository": "openbmb/MiniCPM5-2B-GGUF",
+    "multimodal": false,
+    "reasoning": true,
+    "uncensored": false,
+    "notes": "Più grande della versione 1B: utile per confrontare qualità e consumo di memoria sulla stessa domanda, senza confondere numero di parametri e quantizzazione.",
+    "preferredQuantization": "Q4_K_M",
+    "variants": [
+      {
+        "quantization": "Q4_K_M",
+        "filename": "MiniCPM5-2B-Q4_K_M.gguf",
+        "sizeBytes": 1561318368,
+        "approxSize": "1.45 GiB",
+        "url": "https://huggingface.co/openbmb/MiniCPM5-2B-GGUF/resolve/8ad02b786ab81e33d465e1c80562640c55ab2877/MiniCPM5-2B-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q8_0",
+        "filename": "MiniCPM5-2B-Q8_0.gguf",
+        "sizeBytes": 2679710688,
+        "approxSize": "2.50 GiB",
+        "url": "https://huggingface.co/openbmb/MiniCPM5-2B-GGUF/resolve/8ad02b786ab81e33d465e1c80562640c55ab2877/MiniCPM5-2B-Q8_0.gguf"
+      }
+    ],
+    "sourceRevision": "8ad02b786ab81e33d465e1c80562640c55ab2877",
+    "verifiedAt": "2026-11-18T22:15:08.783Z"
+  },
+  {
+    "id": "minicpm5-2b-heretic-abliterated-gguf",
+    "name": "MiniCPM5 2B Heretic",
+    "repository": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF",
+    "multimodal": false,
+    "reasoning": true,
+    "uncensored": true,
+    "notes": "Variante modificata per ridurre i rifiuti. Confrontala con MiniCPM5 2B originale: meno rifiuti non significa più accuratezza o assenza di errori.",
+    "preferredQuantization": "Q4_K_M",
+    "variants": [
+      {
+        "quantization": "Q3_K_M",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q3_K_M.gguf",
+        "sizeBytes": 1291422624,
+        "approxSize": "1.20 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q3_K_M.gguf"
+      },
+      {
+        "quantization": "Q4_K_S",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q4_K_S.gguf",
+        "sizeBytes": 1498483616,
+        "approxSize": "1.40 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q4_K_S.gguf"
+      },
+      {
+        "quantization": "Q4_K_M",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q4_K_M.gguf",
+        "sizeBytes": 1561320352,
+        "approxSize": "1.45 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q5_K_M",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q5_K_M.gguf",
+        "sizeBytes": 1808063392,
+        "approxSize": "1.68 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q5_K_M.gguf"
+      },
+      {
+        "quantization": "Q6_K",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q6_K.gguf",
+        "sizeBytes": 2070227872,
+        "approxSize": "1.93 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q6_K.gguf"
+      },
+      {
+        "quantization": "Q8_0",
+        "filename": "MiniCPM5-2B-heretic-abliterated-Q8_0.gguf",
+        "sizeBytes": 2679712672,
+        "approxSize": "2.50 GiB",
+        "url": "https://huggingface.co/Abiray/MiniCPM5-2B-heretic-abliterated-GGUF/resolve/c153cc60bed0471d7d26feb02f999a887851a81b/MiniCPM5-2B-heretic-abliterated-Q8_0.gguf"
+      }
+    ],
+    "sourceRevision": "c153cc60bed0471d7d26feb02f999a887851a81b",
+    "verifiedAt": "2026-11-18T22:15:08.966Z"
+  },
+  {
+    "id": "k2-horizon-3.7b-gguf",
+    "name": "K2-Horizon 3.7B",
+    "repository": "IFM/K2-Horizon-3.7B-GGUF",
+    "multimodal": false,
+    "reasoning": true,
+    "uncensored": false,
+    "notes": "Modello dense da 3,7 miliardi di parametri, con ragionamento. Richiede llama.cpp b11454 o successivo; su 8 GB è una prova impegnativa. Il contesto nell’app rimane limitato a 2.048 token.",
+    "preferredQuantization": "Q4_K_M",
+    "variants": [
+      {
+        "quantization": "Q4_K_M",
+        "filename": "K2-Horizon-4B-Q4_K_M.gguf",
+        "sizeBytes": 3156598144,
+        "approxSize": "2.94 GiB",
+        "url": "https://huggingface.co/IFM/K2-Horizon-3.7B-GGUF/resolve/78a0635e8f19b880e468a2fc82923ee6c8a469e4/K2-Horizon-4B-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q5_0",
+        "filename": "K2-Horizon-4B-Q5_0.gguf",
+        "sizeBytes": 3574840704,
+        "approxSize": "3.33 GiB",
+        "url": "https://huggingface.co/IFM/K2-Horizon-3.7B-GGUF/resolve/78a0635e8f19b880e468a2fc82923ee6c8a469e4/K2-Horizon-4B-Q5_0.gguf"
+      },
+      {
+        "quantization": "Q5_K_M",
+        "filename": "K2-Horizon-4B-Q5_K_M.gguf",
+        "sizeBytes": 3643776384,
+        "approxSize": "3.39 GiB",
+        "url": "https://huggingface.co/IFM/K2-Horizon-3.7B-GGUF/resolve/78a0635e8f19b880e468a2fc82923ee6c8a469e4/K2-Horizon-4B-Q5_K_M.gguf"
+      },
+      {
+        "quantization": "Q6_K",
+        "filename": "K2-Horizon-4B-Q6_K.gguf",
+        "sizeBytes": 4161403264,
+        "approxSize": "3.88 GiB",
+        "url": "https://huggingface.co/IFM/K2-Horizon-3.7B-GGUF/resolve/78a0635e8f19b880e468a2fc82923ee6c8a469e4/K2-Horizon-4B-Q6_K.gguf"
+      }
+    ],
+    "sourceRevision": "78a0635e8f19b880e468a2fc82923ee6c8a469e4",
+    "verifiedAt": "2026-11-18T22:15:09.157Z"
+  },
+  {
+    "id": "gemma4-e2b",
+    "name": "Gemma 4 E2B Instruct",
+    "repository": "unsloth/gemma-4-E2B-it-GGUF",
+    "multimodal": true,
+    "reasoning": true,
+    "uncensored": false,
+    "preferredQuantization": "Q4_K_M",
+    "projectorFile": "mmproj-F16.gguf",
+    "notes": "Modello con comprensione delle immagini: scarica anche il proiettore per allegare una foto. E2B indica i parametri effettivi, non la dimensione del file o la RAM totale. Confronta descrizioni e possibili errori visivi.",
+    "variants": [
+      {
+        "quantization": "UD-IQ2_M",
+        "filename": "gemma-4-E2B-it-UD-IQ2_M.gguf",
+        "sizeBytes": 2290860128,
+        "approxSize": "2.13 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-IQ2_M.gguf"
+      },
+      {
+        "quantization": "UD-IQ3_XXS",
+        "filename": "gemma-4-E2B-it-UD-IQ3_XXS.gguf",
+        "sizeBytes": 2372993120,
+        "approxSize": "2.21 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-IQ3_XXS.gguf"
+      },
+      {
+        "quantization": "UD-Q2_K_XL",
+        "filename": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+        "sizeBytes": 2403614816,
+        "approxSize": "2.24 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+      },
+      {
+        "quantization": "Q3_K_S",
+        "filename": "gemma-4-E2B-it-Q3_K_S.gguf",
+        "sizeBytes": 2445652064,
+        "approxSize": "2.28 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q3_K_S.gguf"
+      },
+      {
+        "quantization": "Q3_K_M",
+        "filename": "gemma-4-E2B-it-Q3_K_M.gguf",
+        "sizeBytes": 2536786016,
+        "approxSize": "2.36 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q3_K_M.gguf"
+      },
+      {
+        "quantization": "UD-Q3_K_XL",
+        "filename": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+        "sizeBytes": 2923782240,
+        "approxSize": "2.72 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+      },
+      {
+        "quantization": "IQ4_XS",
+        "filename": "gemma-4-E2B-it-IQ4_XS.gguf",
+        "sizeBytes": 2983944288,
+        "approxSize": "2.78 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-IQ4_XS.gguf"
+      },
+      {
+        "quantization": "IQ4_NL",
+        "filename": "gemma-4-E2B-it-IQ4_NL.gguf",
+        "sizeBytes": 3041083488,
+        "approxSize": "2.83 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-IQ4_NL.gguf"
+      },
+      {
+        "quantization": "Q4_0",
+        "filename": "gemma-4-E2B-it-Q4_0.gguf",
+        "sizeBytes": 3041378400,
+        "approxSize": "2.83 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q4_0.gguf"
+      },
+      {
+        "quantization": "Q4_K_S",
+        "filename": "gemma-4-E2B-it-Q4_K_S.gguf",
+        "sizeBytes": 3043934304,
+        "approxSize": "2.83 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q4_K_S.gguf"
+      },
+      {
+        "quantization": "Q4_K_M",
+        "filename": "gemma-4-E2B-it-Q4_K_M.gguf",
+        "sizeBytes": 3106738272,
+        "approxSize": "2.89 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q4_1",
+        "filename": "gemma-4-E2B-it-Q4_1.gguf",
+        "sizeBytes": 3154919520,
+        "approxSize": "2.94 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q4_1.gguf"
+      },
+      {
+        "quantization": "UD-Q4_K_XL",
+        "filename": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+        "sizeBytes": 3184496736,
+        "approxSize": "2.97 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+      },
+      {
+        "quantization": "Q5_K_S",
+        "filename": "gemma-4-E2B-it-Q5_K_S.gguf",
+        "sizeBytes": 3321151584,
+        "approxSize": "3.09 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q5_K_S.gguf"
+      },
+      {
+        "quantization": "Q5_K_M",
+        "filename": "gemma-4-E2B-it-Q5_K_M.gguf",
+        "sizeBytes": 3356037216,
+        "approxSize": "3.13 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-Q5_K_M.gguf"
+      },
+      {
+        "quantization": "UD-Q5_K_XL",
+        "filename": "gemma-4-E2B-it-UD-Q5_K_XL.gguf",
+        "sizeBytes": 4294176864,
+        "approxSize": "4.00 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/gemma-4-E2B-it-UD-Q5_K_XL.gguf"
+      }
+    ],
+    "projector": {
+      "filename": "gemma4-e2b-mmproj-F16.gguf",
+      "sizeBytes": 985654080,
+      "approxSize": "0.92 GiB",
+      "url": "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/0314792d7f1f7e229411f620751375812bb9faf2/mmproj-F16.gguf"
+    },
+    "sourceRevision": "0314792d7f1f7e229411f620751375812bb9faf2",
+    "verifiedAt": "2026-11-18T22:15:09.348Z"
+  },
+  {
+    "id": "gemma4-e4b",
+    "name": "Gemma 4 E4B Instruct",
+    "repository": "unsloth/gemma-4-E4B-it-GGUF",
+    "multimodal": true,
+    "reasoning": true,
+    "uncensored": false,
+    "preferredQuantization": "Q3_K_M",
+    "projectorFile": "mmproj-F16.gguf",
+    "notes": "Più impegnativo di E2B: entro 4 GiB sono disponibili quantizzazioni più compresse. Il proiettore aggiunge circa 1 GB di file; la RAM necessaria è ulteriore. Utile per misurare il compromesso fra compressione e qualità.",
+    "variants": [
+      {
+        "quantization": "UD-IQ2_M",
+        "filename": "gemma-4-E4B-it-UD-IQ2_M.gguf",
+        "sizeBytes": 3545083008,
+        "approxSize": "3.30 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-UD-IQ2_M.gguf"
+      },
+      {
+        "quantization": "UD-IQ3_XXS",
+        "filename": "gemma-4-E4B-it-UD-IQ3_XXS.gguf",
+        "sizeBytes": 3717115008,
+        "approxSize": "3.46 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-UD-IQ3_XXS.gguf"
+      },
+      {
+        "quantization": "UD-Q2_K_XL",
+        "filename": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+        "sizeBytes": 3757419648,
+        "approxSize": "3.50 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+      },
+      {
+        "quantization": "Q3_K_S",
+        "filename": "gemma-4-E4B-it-Q3_K_S.gguf",
+        "sizeBytes": 3862379648,
+        "approxSize": "3.60 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-Q3_K_S.gguf"
+      },
+      {
+        "quantization": "Q3_K_M",
+        "filename": "gemma-4-E4B-it-Q3_K_M.gguf",
+        "sizeBytes": 4058137728,
+        "approxSize": "3.78 GiB",
+        "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/gemma-4-E4B-it-Q3_K_M.gguf"
+      }
+    ],
+    "projector": {
+      "filename": "gemma4-e4b-mmproj-F16.gguf",
+      "sizeBytes": 990372672,
+      "approxSize": "0.92 GiB",
+      "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/bfc15c382204943c3a8fff0c750b94ae2364d7a3/mmproj-F16.gguf"
+    },
+    "sourceRevision": "bfc15c382204943c3a8fff0c750b94ae2364d7a3",
+    "verifiedAt": "2026-11-18T22:15:09.536Z"
+  },
+  {
+    "id": "gemma4-e2b-heretic",
+    "name": "Gemma 4 E2B Heretic",
+    "repository": "DuoNeural/Gemma-4-E2B-Heretic-GGUF",
+    "multimodal": false,
+    "reasoning": true,
+    "uncensored": true,
+    "preferredQuantization": "Q4_K_M",
+    "notes": "Variante Heretic testuale, con rifiuti ridotti e diverse quantizzazioni entro 4 GiB. Questo repository non include un proiettore: confronta le risposte testuali con Gemma originale senza attribuire maggiore veridicità all’assenza di rifiuti.",
+    "variants": [
+      {
+        "quantization": "IQ1_S",
+        "filename": "Gemma-4-E2B-Heretic-IQ1_S.gguf",
+        "sizeBytes": 2315847744,
+        "approxSize": "2.16 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-IQ1_S.gguf"
+      },
+      {
+        "quantization": "IQ2_M",
+        "filename": "Gemma-4-E2B-Heretic-IQ2_M.gguf",
+        "sizeBytes": 2553153600,
+        "approxSize": "2.38 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-IQ2_M.gguf"
+      },
+      {
+        "quantization": "IQ3_XXS",
+        "filename": "Gemma-4-E2B-Heretic-IQ3_XXS.gguf",
+        "sizeBytes": 2648066112,
+        "approxSize": "2.47 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-IQ3_XXS.gguf"
+      },
+      {
+        "quantization": "Q3_K_M",
+        "filename": "Gemma-4-E2B-Heretic-Q3_K_M.gguf",
+        "sizeBytes": 3191940960,
+        "approxSize": "2.97 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-Q3_K_M.gguf"
+      },
+      {
+        "quantization": "IQ4_XS",
+        "filename": "Gemma-4-E2B-Heretic-IQ4_XS.gguf",
+        "sizeBytes": 3292383296,
+        "approxSize": "3.07 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-IQ4_XS.gguf"
+      },
+      {
+        "quantization": "Q4_K_M",
+        "filename": "Gemma-4-E2B-Heretic-Q4_K_M.gguf",
+        "sizeBytes": 3416101728,
+        "approxSize": "3.18 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-Q4_K_M.gguf"
+      },
+      {
+        "quantization": "Q5_K_M",
+        "filename": "Gemma-4-E2B-Heretic-Q5_K_M.gguf",
+        "sizeBytes": 3616691040,
+        "approxSize": "3.37 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-Q5_K_M.gguf"
+      },
+      {
+        "quantization": "Q6_K",
+        "filename": "Gemma-4-E2B-Heretic-Q6_K.gguf",
+        "sizeBytes": 3829817184,
+        "approxSize": "3.57 GiB",
+        "url": "https://huggingface.co/DuoNeural/Gemma-4-E2B-Heretic-GGUF/resolve/2174d704d437a6cb3257f44f1cb670bcdda13021/Gemma-4-E2B-Heretic-Q6_K.gguf"
+      }
+    ],
+    "sourceRevision": "2174d704d437a6cb3257f44f1cb670bcdda13021",
+    "verifiedAt": "2026-11-18T22:15:09.725Z"
   }
 ]

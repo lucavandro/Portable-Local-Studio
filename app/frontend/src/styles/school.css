@@ -70,3 +70,8 @@
 .school-import {
   margin: 24px 0;
 }
+
+.model-features { display: flex; flex-wrap: wrap; gap: 6px; }
+.model-features span { border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 4px 8px; font-size: .8rem; }
+.school-card select { max-width: 100%; }
+.school-card a { color: var(--md-sys-color-primary); }

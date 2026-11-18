@@ -315,11 +315,17 @@ function TextChat({
         return;
       }
       if (isImage(file)) {
-        showAlert({
-          title: "Formato non supportato",
-          message:
-            "Questa versione accetta documenti di testo e PDF, senza immagini.",
-        });
+        if (!supportsVision) {
+          showAlert({ title: "Immagini non disponibili", message: visionStatus });
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => setAttachments((previous) => [...previous, {
+          id: Math.random().toString(36).slice(2), type: "image", name: file.name,
+          dataUrl: reader.result,
+        }]);
+        reader.onerror = () => showAlert({ title: "Immagine non leggibile", message: "Prova un file PNG, JPEG o WebP diverso." });
+        reader.readAsDataURL(file);
       } else if (isTextFile(file)) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -690,14 +696,19 @@ function TextChat({
         documentContext += `\n[File allegato: ${att.name}]\n${att.content}\n`;
       });
 
-    const requestHasImage = false;
-    const visionInstruction = "";
+    const imageParts = attachments.filter((entry) => entry.type === "image").map((entry) => ({
+      type: "image_url", image_url: { url: entry.dataUrl },
+    }));
+    const requestHasImage = imageParts.length > 0;
+    const visionInstruction = requestHasImage ? "Analizza le immagini allegate e rispondi in italiano. Se un dettaglio non è leggibile, dichiaralo." : "";
     const displayCombinedText = [text, documentContext]
       .filter(Boolean)
       .join("\n\n")
       .trim();
-    const userMessageContent = displayCombinedText;
-    const requestUserMessageContent = displayCombinedText;
+    const userMessageContent = requestHasImage
+      ? [{ type: "text", text: displayCombinedText || "Descrivi questa immagine." }, ...imageParts]
+      : displayCombinedText;
+    const requestUserMessageContent = userMessageContent;
     const nextMessages = [
       ...messages,
       { role: "user", content: userMessageContent },
@@ -711,7 +722,7 @@ function TextChat({
     setInput("");
     setIsBusy(true);
 
-    const displayTitleText = text || "Documento allegato";
+    const displayTitleText = text || (requestHasImage ? "Immagine allegata" : "Documento allegato");
     // Keep the full first line; the sidebar truncates visually
     const firstTitle = isNew
       ? displayTitleText.split("\n")[0].slice(0, 80)
@@ -1100,7 +1111,7 @@ function TextChat({
               ref={fileInputRef}
               style={{ display: "none" }}
               multiple
-              accept=".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.pdf"
+              accept={supportsVision ? ".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.pdf,.png,.jpg,.jpeg,.webp" : ".txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.pdf"}
               onChange={handleFileChange}
             />
             <button
@@ -1111,7 +1122,7 @@ function TextChat({
               aria-label="Allega file"
               title={
                 status.ready
-                  ? "Allega documenti di testo, codice o PDF"
+                  ? supportsVision ? "Allega immagini, documenti di testo, codice o PDF" : "Allega documenti di testo, codice o PDF"
                   : "Carica un modello per allegare file"
               }
             >

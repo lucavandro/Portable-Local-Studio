@@ -28,6 +28,7 @@ export function normalizeModel(model) {
     return { filename: model, sizeBytes: 0, size: "Sconosciuto" };
   }
   return {
+    ...model,
     filename: model?.filename || model?.name || "",
     name: model?.name || model?.filename || "",
     sizeBytes: Number(model?.sizeBytes || 0),

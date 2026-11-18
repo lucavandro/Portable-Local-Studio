@@ -112,6 +112,24 @@ const TTS_WORKER = path.join(
 const SPEECH_BACKEND_ROOT = path.join(ROOT, "app", "speech-backend");
 
 const CHAT_MODEL_CATALOG = require("../../config/models/chat.json");
+const MAX_CHAT_MODEL_BYTES = 4 * 1024 ** 3;
+function findCatalogModel(filename) {
+  for (const model of CHAT_MODEL_CATALOG) {
+    const variant = (model.variants || [model]).find((entry) => entry.filename === filename);
+    if (variant) return { ...model, ...variant };
+  }
+  return null;
+}
+function resolveVisionProjector(filename, requested, directory = LLM_MODELS) {
+  const model = findCatalogModel(filename);
+  const candidate = requested || model?.projector?.filename || "";
+  if (!candidate || path.basename(candidate) !== candidate) return null;
+  const fullPath = path.join(directory, candidate);
+  if (!pathInside(fullPath, directory) || !fs.existsSync(fullPath) ||
+      !/mmproj/i.test(candidate) || fs.statSync(fullPath).size > MAX_CHAT_MODEL_BYTES ||
+      detectModelKindCached(fullPath).kind !== "text") return null;
+  return fullPath;
+}
 const SPEECH_MODEL_CATALOG = require("../../config/models/trascrizione.json");
 const TTS_MODEL_CATALOG = require("../../config/models/voce.json");
 const TTS_VOICES = require("../../app/frontend/src/config/tts-voices.json");
@@ -636,8 +654,9 @@ function getLlmModels() {
         const sizeBytes = link.missing ? 0 : fs.statSync(fullPath).size;
         const lower = filename.toLowerCase();
         return {
+          ...findCatalogModel(filename),
+          name: findCatalogModel(filename)?.name || filename,
           filename,
-          name: filename,
           sizeBytes,
           size: link.missing ? "" : formatBytes(sizeBytes),
           format: "GGUF",
@@ -649,10 +668,8 @@ function getLlmModels() {
       .filter(
         (model) =>
           !model.missing &&
-          !model.isProjector &&
-          model.sizeBytes <= 2 * 1024 ** 3 &&
-          model.detectedKind === "text" &&
-          !/vision|llava|qwen.*vl|smolvlm|moondream/i.test(model.filename),
+          model.sizeBytes <= MAX_CHAT_MODEL_BYTES &&
+          model.detectedKind === "text",
       );
   } catch (_) {
     return [];
@@ -1733,6 +1750,7 @@ async function getHealth() {
       speech: true,
       tts: true,
       images: false,
+      imageUnderstanding: true,
       webSearch: false,
       paidApis: false,
     },
@@ -1831,7 +1849,7 @@ function buildLlmLoadProfiles(settings = {}) {
 // Updating the backend cannot fix these, so fail early with a clear message.
 const LLAMA_CPP_UNSUPPORTED_ARCHITECTURES = {
   mllama:
-    "I modelli visivi non sono disponibili nel profilo scolastico. Scegli un GGUF di testo consigliato.",
+    "Questa architettura mllama non è supportata dal motore. Scegli un modello visivo Gemma del catalogo.",
 };
 
 function readGgufArchitecture(modelPath) {
@@ -2010,18 +2028,25 @@ async function startLlmWithBackend(settings = {}, backend) {
     !fs.existsSync(modelPath)
   )
     throw new Error("Scegli un modello GGUF di testo installato.");
-  if (fs.statSync(modelPath).size > 2 * 1024 ** 3)
+  if (fs.statSync(modelPath).size > MAX_CHAT_MODEL_BYTES)
     throw new Error(
-      "Il modello supera il limite scolastico di 2 GB. Scegli un modello più piccolo.",
+      "Il modello supera il limite scolastico di 4 GiB. Scegli un modello più piccolo.",
     );
   if (
-    detectModelKindCached(modelPath).kind !== "text" ||
-    /vision|mmproj|llava|qwen.*vl|smolvlm|moondream/i.test(filename)
+    detectModelKindCached(modelPath).kind !== "text" || /mmproj/i.test(filename)
   )
     throw new Error(
-      "Questa versione utilizza solo modelli di testo, senza proiettori o modelli di immagini.",
+      "Carica un modello di chat: i proiettori sono componenti aggiuntivi e i modelli per generare immagini non sono supportati.",
     );
   if (!backend) throw new Error("Motore chat CPU mancante. Esegui il setup.");
+  const catalogModel = findCatalogModel(filename);
+  if (readGgufArchitecture(modelPath) === "k2-horizon") {
+    const stamp = path.join(path.dirname(backend.path), ".llama-release");
+    const release = fs.existsSync(stamp) ? fs.readFileSync(stamp, "utf8").trim() : "";
+    if (!/^b\d+$/.test(release) || Number(release.slice(1)) < 11454)
+      throw new Error("K2-Horizon richiede llama.cpp b11454 o successivo. Collega Internet e riavvia il launcher per aggiornare il motore.");
+  }
+  const projector = resolveVisionProjector(filename, settings.mmproj);
   await stopSpeech();
   await stopTts();
   await killLlm();
@@ -2042,10 +2067,13 @@ async function startLlmWithBackend(settings = {}, backend) {
     gpuLayers: 0,
     backendMode: "CPU",
     backendBinary: path.basename(backend.path),
-    supportsVision: false,
-    visionMode: "none",
-    supportsThinking: false,
-    enableThinking: false,
+    supportsVision: Boolean(projector),
+    visionMode: projector ? "mmproj" : "none",
+    mmproj: projector ? path.basename(projector) : null,
+    visionStatus: projector ? "Interpretazione delle immagini disponibile su CPU." :
+      catalogModel?.multimodal ? "Scarica il proiettore dalla pagina Modelli, poi ricarica il modello per interpretare immagini." : "Questo modello accetta solo testo.",
+    supportsThinking: Boolean(catalogModel?.reasoning),
+    enableThinking: Boolean(catalogModel?.reasoning && settings.enableThinking),
     mlock: false,
     mmap: true,
     batchSize: 128,
@@ -2075,6 +2103,7 @@ async function startLlmWithBackend(settings = {}, backend) {
     "--poll",
     "0",
   ];
+  if (projector) args.push("--mmproj", projector, "--no-mmproj-offload");
   if (llamaServerSupportsFlag(backend.path, "--load-mode"))
     args.push("--load-mode", "mmap");
   const spawnEnv = { ...process.env };
@@ -2325,6 +2354,11 @@ function startModelDownload(
       }
 
       const totalBytes = parseInt(response.headers["content-length"], 10) || 0;
+      if (kind === "text" && totalBytes > MAX_CHAT_MODEL_BYTES) {
+        response.resume();
+        failDownload("Il file supera il limite di 4 GiB per modello o proiettore.");
+        return;
+      }
       downloadState.totalBytes = totalBytes;
       let downloadedBytes = 0;
       let startTime = Date.now();
@@ -2332,7 +2366,13 @@ function startModelDownload(
       let lastDownloaded = 0;
 
       response.on("data", (chunk) => {
+        if (downloadFinalized) return;
         downloadedBytes += chunk.length;
+        if (kind === "text" && downloadedBytes > MAX_CHAT_MODEL_BYTES) {
+          response.destroy();
+          failDownload("Il file supera il limite di 4 GiB per modello o proiettore.");
+          return;
+        }
         downloadState.downloadedBytes = downloadedBytes;
         // Wait for the disk to catch up so slow drives (USB sticks) don't buffer the whole file in memory
         if (!fileStream.write(chunk)) {
@@ -2686,7 +2726,7 @@ function streamModelUpload(
 
     const limitBytes =
       mode === "text"
-        ? 2 * 1024 ** 3
+        ? MAX_CHAT_MODEL_BYTES
         : mode === "speech"
           ? 200 * 1024 ** 2
           : 1024 ** 2;
@@ -2724,6 +2764,16 @@ function streamModelUpload(
       } catch (_) {}
     };
 
+    let importedBytes = 0;
+    req.on("data", (chunk) => {
+      importedBytes += chunk.length;
+      if (importedBytes > limitBytes) {
+        req.unpipe(out);
+        cleanupPartial();
+        reject(new Error("File troppo grande per il profilo scolastico."));
+        req.resume();
+      }
+    });
     req.pipe(out);
     req.on("error", (err) => {
       cleanupPartial();
@@ -3375,6 +3425,7 @@ const server = http.createServer(async (req, res) => {
       threads: llmSettings.threads,
       contextSize: nextLimit,
       gpuLayers: llmSettings.gpuLayers,
+      mmproj: llmSettings.mmproj,
       enableThinking: llmSettings.enableThinking,
     };
 
@@ -3389,6 +3440,9 @@ const server = http.createServer(async (req, res) => {
     try {
       const isStream = body.stream === true;
       const rawMessages = Array.isArray(body.messages) ? body.messages : [];
+      if (!llmSettings.supportsVision && rawMessages.some((message) =>
+        Array.isArray(message.content) && message.content.some((part) => part?.type === "image_url")))
+        throw new Error("Per interpretare immagini carica un modello visivo e il suo proiettore compatibile.");
       const webAugmentation = { messages: rawMessages, webSources: [] };
       const requestData = JSON.stringify({
         model: llmSettings.model || "local-model",
@@ -3404,6 +3458,7 @@ const server = http.createServer(async (req, res) => {
           ),
         ),
         stream: isStream,
+        chat_template_kwargs: { enable_thinking: llmSettings.enableThinking },
         // New sampling parameters
         top_p: Number.isFinite(Number(body.top_p)) ? Number(body.top_p) : 0.95,
         top_k: Number.isFinite(Number(body.top_k)) ? Number(body.top_k) : 40,

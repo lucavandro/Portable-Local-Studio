@@ -1,3 +1,4 @@
+import ChatModelCard, { ModelFeatures } from "./ChatModelCard";
 import { describeUiError } from "../utils/uiError";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -96,7 +97,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (file.size > (mode === "text" ? 2 * 1024 ** 3 : 200 * 1024 ** 2)) {
+    if (file.size > (mode === "text" ? 4 * 1024 ** 3 : 200 * 1024 ** 2)) {
       setError(
         "File troppo grande per il profilo scolastico. Scegli un modello consigliato.",
       );
@@ -107,7 +108,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
   const names = new Set(models.text.map((m) => m.filename));
   const catalog =
     mode === "text"
-      ? (specs.recommended_models || []).filter((m) => !names.has(m.filename))
+      ? (specs.recommended_models || [])
       : models[mode].filter((m) => !m.installed);
   const installed =
     mode === "text" ? models.text : models[mode].filter((m) => m.installed);
@@ -132,8 +133,12 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       </div>
       {mode === "text" && (
         <p>
-          Inizia con 0.5B, poi confronta 1.5B su qualità e tempi. Limite del
-          profilo: 2 GB per file; solo modelli di testo.
+          Limite: 4 GiB per file. Confronta le versioni dello stesso modello:
+          Q3, Q4, Q5 e Q8 indicano diversi livelli di compressione dei pesi.
+          Meno bit riducono spesso il file e la memoria, ma possono ridurre la qualità;
+          non garantiscono maggiore velocità. F16 conserva maggiore precisione.
+          I suffissi K, M e S distinguono metodi e varianti: la dimensione effettiva
+          dipende anche dall’architettura. I GiB indicano il file, non la RAM totale.
         </p>
       )}
       {mode === "speech" && (
@@ -181,6 +186,8 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
         {installed.map((model) => (
           <article className="school-card" key={model.filename}>
             <strong>{model.name || model.filename}</strong>
+            {mode === "text" && (model.isProjector ? <span>Proiettore per interpretare immagini</span> : model.id && <ModelFeatures model={model} />)}
+            {mode === "text" && model.quantization && <span>{model.quantization}</span>}
             <span>{model.localSize || model.size}</span>
             <button
               className="m3-btn m3-btn-outlined"
@@ -194,7 +201,9 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       </div>
       <h2>Consigliati</h2>
       <div className="school-grid">
-        {catalog.map((model) => (
+        {catalog.map((model) => mode === "text" ? (
+          <ChatModelCard key={model.id || model.filename} model={model} installedNames={names} locked={locked} install={install} />
+        ) : (
           <article className="school-card" key={model.filename}>
             <strong>{model.name}</strong>
             <span>{model.approxSize || model.size}</span>

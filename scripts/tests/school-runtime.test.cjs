@@ -36,7 +36,7 @@ function gguf(architecture) {
   ]);
 }
 
-function loadRuntime(t, catalogs = {}) {
+function loadRuntime(t, catalogs = {}, fileSizes = {}) {
   const folder = fs.mkdtempSync(path.join(os.tmpdir(), "school-studio-"));
   t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
   let handler;
@@ -60,6 +60,11 @@ function loadRuntime(t, catalogs = {}) {
     require(name) {
       const catalog = name.match(/^\.\.\/\.\.\/config\/models\/(.+)\.json$/)?.[1];
       if (catalog && catalogs[catalog]) return catalogs[catalog];
+      if (name === "fs") return { ...fs, statSync(file, ...args) {
+        const stat = fs.statSync(file, ...args);
+        if (Object.hasOwn(fileSizes, path.basename(String(file)))) stat.size = fileSizes[path.basename(String(file))];
+        return stat;
+      }};
       if (name === "http")
         return {
           ...require("node:http"),
@@ -144,6 +149,7 @@ test("school API exposes only local text and audio capabilities", async (t) => {
     speech: true,
     tts: true,
     images: false,
+    imageUnderstanding: true,
     webSearch: false,
     paidApis: false,
   });
@@ -173,11 +179,11 @@ test("school catalogs retain lightweight multilingual speech and quantized voice
     true,
   );
   const specs = (await request("/api/hardware-specs")).body;
-  assert.equal(specs.recommended_models.length, 2);
+  assert.equal(specs.recommended_models.length, 7);
   assert.equal(
-    specs.recommended_models.every((model) =>
-      model.url.startsWith("https://huggingface.co/Qwen/"),
-    ),
+    specs.recommended_models.every((model) => model.variants.length > 0 && model.variants.every((variant) =>
+      variant.url.startsWith("https://huggingface.co/") && variant.sizeBytes <= 4 * 1024 ** 3,
+    )),
     true,
   );
   const speech = (await request("/api/speech/models")).body.models;
@@ -261,7 +267,7 @@ test("text loading rejects diffusion and projector weights before launching a pr
         { model: filename },
         { path: "unused", mode: "CPU" },
       ),
-      /solo modelli di testo/,
+      /Carica un modello di chat/,
     );
   }
   assert.equal(spawns.length, 0);
@@ -317,4 +323,44 @@ test("text, transcription and voice share one work queue", async (t) => {
   release();
   await Promise.all([text, speech, voice]);
   assert.deepEqual(events, ["text-start", "text-end", "speech", "voice"]);
+});
+
+
+test("vision loading uses only the paired projector and runs it on CPU", async (t) => {
+  const { request, folder, runtime, spawns } = loadRuntime(t);
+  const model = (await request("/api/hardware-specs")).body.recommended_models.find((entry) => entry.id === "gemma4-e2b");
+  const filename = model.variants[0].filename;
+  fs.writeFileSync(path.join(folder, "app/llm-models", filename), gguf("gemma4"));
+  await assert.rejects(runtime.startLlmWithBackend({ model: filename }, { path: "unused" }), /spawn intercepted/);
+  assert.equal(runtime.settings().supportsVision, false);
+  assert.ok(!spawns[0].args.includes("--mmproj"));
+  fs.writeFileSync(path.join(folder, "app/llm-models", model.projector.filename), gguf("clip"));
+  await assert.rejects(runtime.startLlmWithBackend({ model: filename }, { path: "unused" }), /spawn intercepted/);
+  assert.equal(runtime.settings().supportsVision, true);
+  assert.equal(runtime.settings().mmproj, model.projector.filename);
+  assert.ok(spawns[1].args.includes("--no-mmproj-offload"));
+  const index = spawns[1].args.indexOf("--mmproj");
+  assert.equal(spawns[1].args[index + 1], path.join(folder, "app/llm-models", model.projector.filename));
+});
+
+test("K2 rejects an old engine before spawning and accepts the supported release", async (t) => {
+  const { folder, runtime, spawns } = loadRuntime(t);
+  fs.writeFileSync(path.join(folder, "app/llm-models/k2.gguf"), gguf("k2-horizon"));
+  const engine = path.join(folder, "engine");
+  fs.mkdirSync(engine);
+  fs.writeFileSync(path.join(engine, ".llama-release"), "b11418");
+  await assert.rejects(runtime.startLlmWithBackend({ model: "k2.gguf" }, { path: path.join(engine, "llama-server.exe") }), /b11454/);
+  assert.equal(spawns.length, 0);
+  fs.writeFileSync(path.join(engine, ".llama-release"), "b11460");
+  await assert.rejects(runtime.startLlmWithBackend({ model: "k2.gguf" }, { path: path.join(engine, "llama-server.exe") }), /spawn intercepted/);
+});
+
+test("chat accepts the four GiB boundary and rejects larger files before starting", async (t) => {
+  const sizes = { "boundary.gguf": 4 * 1024 ** 3 };
+  const { folder, runtime, spawns } = loadRuntime(t, {}, sizes);
+  fs.writeFileSync(path.join(folder, "app/llm-models/boundary.gguf"), gguf("qwen2"));
+  await assert.rejects(runtime.startLlmWithBackend({ model: "boundary.gguf" }, { path: "unused" }), /spawn intercepted/);
+  sizes["boundary.gguf"] += 1;
+  await assert.rejects(runtime.startLlmWithBackend({ model: "boundary.gguf" }, { path: "unused" }), /4 GiB/);
+  assert.equal(spawns.length, 1);
 });
