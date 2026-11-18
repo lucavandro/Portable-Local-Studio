@@ -1,4 +1,4 @@
-# Local AI Studio - Kokoro TTS setup for Windows
+﻿# Local AI Studio - Kokoro TTS setup for Windows
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent (Split-Path -Parent $scriptDir)
@@ -18,14 +18,14 @@ function Print-Fail { param([string]$m); Write-Host "   XX  $m" -ForegroundColor
 
 Write-Host ""
 Write-Host "  ============================================================" -ForegroundColor Cyan
-Write-Host "   Setting up Kokoro ONNX Text-to-Speech runtime" -ForegroundColor Cyan
+Write-Host "   Preparazione di Kokoro: lettura dei testi ad alta voce" -ForegroundColor Cyan
 Write-Host "  ============================================================" -ForegroundColor Cyan
 Write-Host ""
 
 New-Item -ItemType Directory -Force -Path $runtimeDir, $modelsDir, $outputsDir, $cacheDir | Out-Null
 
 if (-not (Test-Path $nodeExe) -or -not (Test-Path $npmCmd)) {
-    Print-Fail "Portable Node.js is missing. Run scripts/setup/setup.ps1 first."
+    Print-Fail "Manca Node.js portatile. Avvia windows.bat per preparare tutti i componenti."
     exit 1
 }
 
@@ -54,10 +54,10 @@ try {
     # also avoids setup failures when a machine has a newer CUDA toolkit.
     $env:ONNXRUNTIME_NODE_INSTALL_CUDA = "skip"
     $installMode = if (Test-Path (Join-Path $runtimeDir "package-lock.json")) { "ci" } else { "install" }
-    Print-Info "Installing pinned kokoro-js dependencies into app/tts-runtime..."
+    Print-Info "Installazione delle librerie vocali e della pronuncia italiana in app/tts-runtime..."
     & $npmCmd $installMode --prefer-online --no-audit --no-fund --loglevel=error
     if ($LASTEXITCODE -ne 0) {
-        Print-Fail "kokoro-js install failed."
+        Print-Fail "Installazione delle librerie vocali non riuscita. Controlla Internet e chiedi aiuto al docente."
         exit 1
     }
 } finally {
@@ -66,4 +66,4 @@ try {
     Pop-Location
 }
 
-Print-OK "Kokoro TTS runtime is ready."
+Print-OK "Motore vocale pronto. I pesi Kokoro Q8 si preparano dalla sezione Modelli dell'app."

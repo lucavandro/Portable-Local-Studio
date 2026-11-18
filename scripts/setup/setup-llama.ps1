@@ -1,4 +1,4 @@
-param([string]$Release = "b11418")
+﻿param([string]$Release = "b11418")
 
 $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -13,7 +13,7 @@ function Enable-Tls12 {
         [Net.ServicePointManager]::SecurityProtocol =
             [Net.ServicePointManager]::SecurityProtocol -bor $tls12
     } catch {
-        throw "TLS 1.2 could not be enabled: $($_.Exception.Message)"
+        throw "Impossibile attivare la connessione sicura TLS 1.2: $($_.Exception.Message)"
     }
 }
 
@@ -35,7 +35,7 @@ function Download-File {
     
     $barWidth  = 48
 
-    Write-Host "   >>  Downloading $Label..."
+    Write-Host "   >>  Scaricamento di $Label..."
 
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         $lastBytes = [long]0
@@ -77,7 +77,7 @@ function Download-File {
                     $eta = ""
                     if ($speed -gt 0 -and $total -gt 0) {
                         $rem = [int](($total - $done) / $speed)
-                        $eta = "  ETA $([int]($rem/60))m$($rem%60)s"
+                        $eta = "  tempo rimanente $([int]($rem/60))m$($rem%60)s"
                     }
 
                     $dl  = Format-Bytes $done
@@ -88,20 +88,20 @@ function Download-File {
             }
 
             if ($total -gt 0 -and $done -ne $total) {
-                throw "Download ended early: $(Format-Bytes $done) of $(Format-Bytes $total) received."
+                throw "Scaricamento interrotto: $(Format-Bytes $done) su $(Format-Bytes $total) ricevuti."
             }
 
-            Write-Host "`r      [$("#" * $barWidth)] 100%  $(Format-Bytes $done)  Done!                         " -ForegroundColor Green
+            Write-Host "`r      [$("#" * $barWidth)] 100%  $(Format-Bytes $done)  Completato!                         " -ForegroundColor Green
             Write-Host ""
             return
         } catch {
             Write-Host ""
             if ($attempt -lt 3) {
-                Write-Host "   !!  Download attempt $attempt failed: $_" -ForegroundColor Yellow
-                Write-Host "   >>  Retrying download..." -ForegroundColor Cyan
+                Write-Host "   !!  Tentativo di scaricamento $attempt non riuscito: $_" -ForegroundColor Yellow
+                Write-Host "   >>  Nuovo tentativo di scaricamento..." -ForegroundColor Cyan
                 Start-Sleep -Seconds (2 * $attempt)
             } else {
-                throw "Download failed after $attempt attempts: $_"
+                throw "Scaricamento non riuscito dopo $attempt tentativi: $_"
             }
         } finally {
             if ($out) { $out.Close() }
@@ -123,10 +123,10 @@ function Install-LlamaArchive {
         $installedRelease = ""
         if (Test-Path $stamp) { $installedRelease = (Get-Content $stamp -Raw).Trim() }
         if ($installedRelease -eq $Release) {
-            Write-Host "   OK  llama.cpp $Variant backend already ready ($Release)."
+            Write-Host "   OK  Motore chat llama.cpp $Variant gia' pronto, versione $Release."
             return
         }
-        Write-Host "   >>  Updating llama.cpp $Variant backend to $Release (installed: $(if ($installedRelease) { $installedRelease } else { 'unknown' }))..."
+        Write-Host "   >>  Aggiornamento del motore chat llama.cpp $Variant a $Release, versione installata: $(if ($installedRelease) { $installedRelease } else { 'sconosciuta' })."
     }
 
     $archive = Join-Path $toolsDir $AssetName
@@ -136,9 +136,9 @@ function Install-LlamaArchive {
     New-Item -ItemType Directory -Force -Path $toolsDir, $dest | Out-Null
     Remove-Item $archive, $extract -Recurse -Force -ErrorAction SilentlyContinue
 
-    Download-File -Url $url -DestPath $archive -Label "llama.cpp $Variant backend ($Release)"
+    Download-File -Url $url -DestPath $archive -Label "motore chat llama.cpp $Variant, versione $Release"
 
-    Write-Host "   >>  Extracting llama.cpp $Variant backend..."
+    Write-Host "   >>  Estrazione del motore chat llama.cpp $Variant..."
     Expand-Archive -Path $archive -DestinationPath $extract -Force
 
     # Clear the previous release first so stale DLLs from an older layout (monolithic vs
@@ -151,10 +151,10 @@ function Install-LlamaArchive {
     Remove-Item $archive, $extract -Recurse -Force -ErrorAction SilentlyContinue
 
     if (-not (Test-Path $server)) {
-        throw "llama-server.exe was not found after extracting $AssetName"
+        throw "llama-server.exe non trovato dopo l'estrazione di $AssetName. Mostra questo errore al docente."
     }
     Set-Content -Path $stamp -Value $Release -Encoding ASCII
-    Write-Host "   OK  llama.cpp $Variant backend installed."
+    Write-Host "   OK  Motore chat llama.cpp $Variant installato."
 }
 
 Install-LlamaArchive -Variant "cpu" -AssetName "llama-$Release-bin-win-cpu-x64.zip"

@@ -21,7 +21,7 @@ Le vecchie cartelle di modelli e immagini eventualmente presenti non vengono can
 
 ## Preparare un computer
 
-Su Windows 10/11 a 64 bit avvia `windows.bat`. Su Linux avvia `./linux.sh`, su macOS `./mac.sh`. Il setup installa nella cartella del progetto Node.js, llama.cpp CPU, Whisper e Kokoro, poi compila l’interfaccia. Su Windows il runtime Visual C++ può richiedere privilegi amministrativi. Il setup deve essere eseguito con Internet prima della lezione.
+Su Windows 10/11 a 64 bit avvia `windows.bat`. Su Linux avvia `./linux.sh`, su macOS `./mac.sh`. Il setup installa nella cartella del progetto Node.js, llama.cpp CPU, Whisper e Kokoro, poi compila l’interfaccia. Su Windows il runtime Visual C++ può richiedere privilegi amministrativi. Il setup deve essere eseguito con Internet prima della lezione. Il launcher Windows e gli script di preparazione mostrano istruzioni in italiano: spiegano i sei passaggi, il ruolo dei motori AI e come iniziare. I messaggi tecnici prodotti da npm, dai compilatori e dai motori possono restare in inglese. Lascia aperta la finestra durante l'uso; premi Ctrl+C per terminare.
 
 1. Apri **Modelli → Chat** e scarica **Qwen 2.5 0.5B Instruct Q4_K_M**, oppure importa il file GGUF già scaricato.
 2. Per confrontare due modelli usa anche **Qwen 2.5 1.5B Instruct Q4_K_M**. Il secondo modello può risultare più lento; misuralo sul computer reale.
