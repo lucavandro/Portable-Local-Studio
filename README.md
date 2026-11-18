@@ -46,6 +46,8 @@ Per il corso si possono confrontare regole programmate e classificazioni del mod
 
 I modelli piccoli possono sbagliare anche compiti semplici. La qualità in italiano e la velocità vanno provate sui portatili del laboratorio; non sono promesse prestazioni equivalenti a un servizio cloud.
 
+La web UI è in italiano: chat, trascrizione, voce, modelli, impostazioni, temi, conferme e descrizioni accessibili dei controlli. I nomi dei modelli, i formati dei file e i contenuti delle conversazioni mantengono il testo originale. Dopo un aggiornamento del codice, ricompila l’interfaccia con `npm run build` in `app/frontend`, riavvia l’app e ricarica la pagina per vedere i nuovi testi.
+
 ## Sviluppo e controlli
 
 ```powershell

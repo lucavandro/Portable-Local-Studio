@@ -1,3 +1,4 @@
+import { describeUiError } from "../utils/uiError";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   listLlmModels,
@@ -42,7 +43,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       try {
         await refresh();
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) setError(describeUiError(err));
       }
       if (!cancelled) timer = setTimeout(poll, 1500);
     };
@@ -59,7 +60,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       await operation();
       await refresh();
     } catch (err) {
-      setError(err.message || String(err));
+      setError(describeUiError(err));
     } finally {
       setBusy(false);
     }

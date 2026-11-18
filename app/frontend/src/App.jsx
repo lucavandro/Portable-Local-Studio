@@ -1,3 +1,4 @@
+import { describeUiError } from "./utils/uiError";
 import { DEFAULT_TTS_VOICE, normalizeTtsVoice } from "./utils/ttsVoice";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Sidebar from "./components/Sidebar";
@@ -62,10 +63,10 @@ function App() {
 
   const showConfirm = useCallback(
     ({
-      title = "Confirm Action",
+      title = "Conferma operazione",
       message,
       confirmLabel = "OK",
-      cancelLabel = "Cancel",
+      cancelLabel = "Annulla",
       danger = false,
     }) => {
       return new Promise((resolve) => {
@@ -84,7 +85,7 @@ function App() {
   );
 
   const showAlert = useCallback(
-    ({ title = "Notice", message, confirmLabel = "OK", danger = false }) => {
+    ({ title = "Avviso", message, confirmLabel = "OK", danger = false }) => {
       return new Promise((resolve) => {
         dialogResolverRef.current = resolve;
         setDialog({ type: "alert", title, message, confirmLabel, danger });
@@ -117,19 +118,19 @@ function App() {
 
   // System Specifications & Telemetry
   const [specs, setSpecs] = useState({
-    os_name: "Loading Specs...",
-    cpu_name: "Loading Specs...",
+    os_name: "Lettura delle caratteristiche...",
+    cpu_name: "Lettura delle caratteristiche...",
     cpu_cores_physical: 4,
     cpu_cores_logical: 8,
     ram_total_gb: 0,
-    gpu_name: "Loading Specs...",
+    gpu_name: "Lettura delle caratteristiche...",
   });
 
   const [telemetry, setTelemetry] = useState({
     cpu_usage: 0,
     ram_used_gb: 0,
     ram_total_gb: 0,
-    gpu_name: "Detecting...",
+    gpu_name: "Rilevamento...",
     vram_used_gb: 0,
     vram_total_gb: 0,
   });
@@ -305,7 +306,7 @@ function App() {
         if (item?.type !== "image_url") return item;
         return {
           type: "text",
-          text: "[Attached image omitted from saved chat history]",
+          text: "[Immagine allegata omessa dalla cronologia salvata]",
         };
       }),
     };
@@ -399,7 +400,7 @@ function App() {
         } else {
           conversation = {
             id,
-            title: newTitle || "Chat Session",
+            title: newTitle || "Conversazione",
             model: modelName,
             messages: msgs,
             timestamp: Date.now(),
@@ -447,9 +448,9 @@ function App() {
       if (!itemId) return;
 
       const ok = await showConfirm({
-        title: "Delete Transcription",
-        message: `Are you sure you want to delete "${item.displayName || item.sourceFilename || "this transcription"}"? This action cannot be undone.`,
-        confirmLabel: "Delete",
+        title: "Elimina trascrizione",
+        message: `Vuoi eliminare "${item.displayName || item.sourceFilename || "questa trascrizione"}"? Questa operazione non può essere annullata.`,
+        confirmLabel: "Elimina",
         danger: true,
       });
       if (!ok) return;
@@ -469,8 +470,8 @@ function App() {
       } catch (err) {
         console.error("Failed to delete speech transcription:", err);
         showAlert({
-          title: "Delete Failed",
-          message: err.message || String(err),
+          title: "Eliminazione non riuscita",
+          message: describeUiError(err),
           danger: true,
         });
       }
@@ -504,9 +505,9 @@ function App() {
       if (!itemId) return;
 
       const ok = await showConfirm({
-        title: "Delete TTS Output",
-        message: `Are you sure you want to delete "${item.displayName || item.audioFile || "this audio"}"? This action cannot be undone.`,
-        confirmLabel: "Delete",
+        title: "Elimina audio vocale",
+        message: `Vuoi eliminare "${item.displayName || item.audioFile || "questo audio"}"? Questa operazione non può essere annullata.`,
+        confirmLabel: "Elimina",
         danger: true,
       });
       if (!ok) return;
@@ -524,8 +525,8 @@ function App() {
       } catch (err) {
         console.error("Failed to delete TTS output:", err);
         showAlert({
-          title: "Delete Failed",
-          message: err.message || String(err),
+          title: "Eliminazione non riuscita",
+          message: describeUiError(err),
           danger: true,
         });
       }
@@ -579,8 +580,8 @@ function App() {
       setTimeout(() => setDiagnosticsCopied(false), 1800);
     } catch (err) {
       showAlert({
-        title: "Diagnostics Failed",
-        message: err.message || String(err),
+        title: "Diagnostica non riuscita",
+        message: describeUiError(err),
         danger: true,
       });
     }

@@ -35,7 +35,7 @@ function TopStatusBar({
     const text = await getLlmStatus().catch(() => null);
     setLoaded({
       text: text?.ready
-        ? cleanModelName(text.settings?.model) || "Chat model"
+        ? cleanModelName(text.settings?.model) || "Modello chat"
         : null,
     });
   }, []);
@@ -83,8 +83,8 @@ function TopStatusBar({
             type="button"
             onClick={onToggleSidebar}
             className="sidebar-toggle-btn"
-            aria-label="Open sidebar"
-            title="Open sidebar"
+            aria-label="Apri la barra laterale"
+            title="Apri la barra laterale"
           >
             <PanelLeft size={18} />
           </button>
@@ -111,8 +111,8 @@ function TopStatusBar({
                 className="status-pill-unload"
                 onClick={() => unload(kind)}
                 disabled={unloading !== null}
-                aria-label={`Unload ${loaded[kind]}`}
-                title="Unload to free memory"
+                aria-label={`Libera ${loaded[kind]} dalla memoria`}
+                title="Rimuovi il modello dalla RAM per liberare memoria"
               >
                 {unloading === kind ? (
                   <Loader2
@@ -134,8 +134,8 @@ function TopStatusBar({
           type="button"
           className="theme-toggle-btn"
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
-          title={`Switch to ${isDark ? "light" : "dark"} theme`}
+          aria-label={`Passa al tema ${isDark ? "chiaro" : "scuro"}`}
+          title={`Passa al tema ${isDark ? "chiaro" : "scuro"}`}
         >
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -146,18 +146,18 @@ function TopStatusBar({
         >
           <button
             type="button"
-            aria-label="Choose a color theme"
+            aria-label="Scegli un tema colore"
             aria-expanded={showThemeMenu}
             className={`theme-toggle-btn ${showThemeMenu ? "active" : ""}`}
             onClick={() => setShowThemeMenu(!showThemeMenu)}
-            title="Choose a custom color theme"
+            title="Scegli un tema colore personalizzato"
           >
             <Palette size={18} />
           </button>
 
           {showThemeMenu && (
             <div className="theme-dropdown-menu">
-              <div className="theme-dropdown-header">Select Theme</div>
+              <div className="theme-dropdown-header">Scegli il tema</div>
               <div className="theme-dropdown-divider"></div>
               {THEMES.map((t) => {
                 const isActive = theme === t.id;

@@ -1,3 +1,4 @@
+import { describeUiError } from "../utils/uiError";
 import React, {
   useCallback,
   useEffect,
@@ -37,17 +38,17 @@ import {
 import "../styles/transcribe.css";
 
 const LANGUAGE_OPTIONS = [
-  { value: "auto", label: "Auto-detect" },
-  { value: "en", label: "English" },
-  { value: "es", label: "Spanish" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" },
-  { value: "it", label: "Italian" },
-  { value: "pt", label: "Portuguese" },
+  { value: "auto", label: "Rilevamento automatico" },
+  { value: "en", label: "Inglese" },
+  { value: "es", label: "Spagnolo" },
+  { value: "fr", label: "Francese" },
+  { value: "de", label: "Tedesco" },
+  { value: "it", label: "Italiano" },
+  { value: "pt", label: "Portoghese" },
   { value: "hi", label: "Hindi" },
-  { value: "ja", label: "Japanese" },
-  { value: "ko", label: "Korean" },
-  { value: "zh", label: "Chinese" },
+  { value: "ja", label: "Giapponese" },
+  { value: "ko", label: "Coreano" },
+  { value: "zh", label: "Cinese" },
 ];
 
 // Whisper only needs 16 kHz mono, so any format the browser can decode (MP3, M4A, OGG,
@@ -62,7 +63,7 @@ async function convertAudioFileTo16kWav(file) {
     decoded = await decoder.decodeAudioData(encoded);
   } catch (_) {
     throw new Error(
-      `Could not decode "${file.name}". Supported formats are the ones your browser can play, such as WAV, MP3, M4A, OGG, WebM and FLAC.`,
+      `Impossibile leggere "${file.name}". Sono supportati i formati riproducibili dal browser, come WAV, MP3, M4A, OGG, WebM e FLAC.`,
     );
   }
   const mono = new Float32Array(decoded.length);
@@ -203,7 +204,7 @@ export default function SpeechTranscriber({
     if (!selectedModel) return false;
     const model = models.find((m) => m.filename === selectedModel);
     return (
-      model?.language === "English" ||
+      ["English", "Inglese"].includes(model?.language) ||
       selectedModel.toLowerCase().includes(".en")
     );
   }, [selectedModel, models]);
@@ -238,8 +239,8 @@ export default function SpeechTranscriber({
   useEffect(() => {
     refresh().catch((err) =>
       showAlert?.({
-        title: "Speech status failed",
-        message: err.message || String(err),
+        title: "Stato della trascrizione non disponibile",
+        message: describeUiError(err),
         danger: true,
       }),
     );
@@ -342,8 +343,8 @@ export default function SpeechTranscriber({
       await refresh();
     } catch (err) {
       showAlert?.({
-        title: "Speech model did not load",
-        message: err.message || String(err),
+        title: "Caricamento del modello di trascrizione non riuscito",
+        message: describeUiError(err),
         danger: true,
       });
     } finally {
@@ -356,8 +357,8 @@ export default function SpeechTranscriber({
       .then(refresh)
       .catch((err) =>
         showAlert?.({
-          title: "Could not stop the runtime",
-          message: err.message || String(err),
+          title: "Impossibile arrestare il motore",
+          message: describeUiError(err),
           danger: true,
         }),
       );
@@ -366,8 +367,8 @@ export default function SpeechTranscriber({
   const handleRefresh = () => {
     refresh().catch((err) =>
       showAlert?.({
-        title: "Speech status failed",
-        message: err.message || String(err),
+        title: "Stato della trascrizione non disponibile",
+        message: describeUiError(err),
         danger: true,
       }),
     );
@@ -379,8 +380,8 @@ export default function SpeechTranscriber({
       setIsRecording(true);
     } catch (err) {
       showAlert?.({
-        title: "Microphone unavailable",
-        message: err.message || String(err),
+        title: "Microfono non disponibile",
+        message: describeUiError(err),
         danger: true,
       });
     }
@@ -407,8 +408,8 @@ export default function SpeechTranscriber({
       setCurrentAudio(wav, file.name.replace(/\.[^.]+$/, "") + ".wav");
     } catch (err) {
       showAlert?.({
-        title: "Unsupported audio",
-        message: err.message || String(err),
+        title: "Audio non supportato",
+        message: describeUiError(err),
         danger: true,
       });
     } finally {
@@ -488,17 +489,17 @@ export default function SpeechTranscriber({
 
       if (transcription?.text?.toLowerCase().includes("foreign language")) {
         showAlert?.({
-          title: "Foreign language detected",
+          title: "Rilevata una lingua diversa dall’inglese",
           message:
-            "The loaded model is English-only and cannot transcribe non-English speech. Download a multilingual Whisper model (for example Whisper Base Multilingual) in Models, load it, and transcribe again.",
+            "Il modello caricato riconosce solo l’inglese. Scarica un modello Whisper multilingue dalla pagina Modelli, caricalo e riprova la trascrizione.",
           danger: false,
         });
       }
     } catch (err) {
       if (err.name !== "AbortError") {
         showAlert?.({
-          title: "Transcription failed",
-          message: err.message || String(err),
+          title: "Trascrizione non riuscita",
+          message: describeUiError(err),
           danger: true,
         });
       }
@@ -534,8 +535,8 @@ export default function SpeechTranscriber({
       setCopied(true);
     } catch (err) {
       showAlert?.({
-        title: "Could not copy",
-        message: err.message || String(err),
+        title: "Impossibile copiare",
+        message: describeUiError(err),
         danger: true,
       });
     }
@@ -547,7 +548,7 @@ export default function SpeechTranscriber({
   const modelLabel =
     selectedModelInfo?.name ||
     selectedModel ||
-    (installedModels.length ? "Choose a Whisper model" : "No Whisper models");
+    (installedModels.length ? "Scegli un modello Whisper" : "Nessun modello Whisper");
   const segments = Array.isArray(result?.raw?.transcription)
     ? result.raw.transcription
     : [];
@@ -559,15 +560,15 @@ export default function SpeechTranscriber({
         result?.textFile ||
         result?.filename ||
         audioName,
-    ) || "Transcript";
+    ) || "Trascrizione";
   const runtimeLabel = status.backendInstalled
     ? status.ready
-      ? "Ready"
-      : "Installed"
-    : "Backend missing";
+      ? "Pronto"
+      : "Installato"
+    : "Motore non installato";
   const languageLabel =
     LANGUAGE_OPTIONS.find((item) => item.value === language)?.label ||
-    "Auto-detect";
+    "Rilevamento automatico";
   const audioDuration = wavDurationSeconds(audioBlob);
 
   const modelPicker = (
@@ -579,7 +580,7 @@ export default function SpeechTranscriber({
         disabled={isTranscribing}
         aria-haspopup="menu"
         aria-expanded={showModelMenu}
-        title={selectedModel || "Choose a Whisper model"}
+        title={selectedModel || "Scegli un modello Whisper"}
       >
         {isLoadingModel ? (
           <LoaderCircle
@@ -598,7 +599,7 @@ export default function SpeechTranscriber({
 
       {showModelMenu && (
         <div className="chat-model-menu" role="menu">
-          <div className="chat-model-menu-label">Whisper models</div>
+          <div className="chat-model-menu-label">Modelli Whisper</div>
           {installedModels.length === 0 && (
             <div className="chat-model-menu-label transcribe-menu-note">
               Scarica un modello in Modelli → Trascrizione.
@@ -624,7 +625,7 @@ export default function SpeechTranscriber({
                   {model.name || model.filename}
                 </span>
                 {isActive && (
-                  <span className="chat-model-menu-badge">Loaded</span>
+                  <span className="chat-model-menu-badge">Caricato</span>
                 )}
               </button>
             );
@@ -640,7 +641,7 @@ export default function SpeechTranscriber({
             }}
           >
             <RefreshCw size={14} aria-hidden="true" />
-            <span className="chat-model-menu-name">Refresh</span>
+            <span className="chat-model-menu-name">Aggiorna elenco</span>
           </button>
           {status.ready && (
             <button
@@ -653,7 +654,7 @@ export default function SpeechTranscriber({
               }}
             >
               <Square size={14} aria-hidden="true" />
-              <span className="chat-model-menu-name">Unload model</span>
+              <span className="chat-model-menu-name">Libera il modello dalla memoria</span>
             </button>
           )}
         </div>
@@ -667,8 +668,8 @@ export default function SpeechTranscriber({
         type="button"
         className={`icon-btn ${showOptions ? "active" : ""}`}
         onClick={() => setShowOptions((open) => !open)}
-        aria-label="Runtime options"
-        title="Runtime options"
+        aria-label="Opzioni del motore"
+        title="Opzioni del motore"
         aria-haspopup="dialog"
         aria-expanded={showOptions}
       >
@@ -678,17 +679,17 @@ export default function SpeechTranscriber({
         <div
           className="popover transcribe-popover"
           role="dialog"
-          aria-label="Runtime options"
+          aria-label="Opzioni del motore"
         >
           <div className="transcribe-popover-status">
-            <span className="field-label">Runtime</span>
+            <span className="field-label">Motore</span>
             <span className={`tag ${status.ready ? "tag-success" : ""}`}>
               {runtimeLabel}
             </span>
           </div>
 
           <label className="field">
-            <span className="field-label">Threads</span>
+            <span className="field-label">Thread della CPU</span>
             <input
               className="transcribe-input"
               type="number"
@@ -702,7 +703,7 @@ export default function SpeechTranscriber({
               }
             />
             <span className="field-hint">
-              CPU threads whisper.cpp uses, 1 to 32.
+              Numero di attività parallele della CPU usate da Whisper, da 1 a 4.
             </span>
           </label>
           {selectedModel && !isSelectedRuntimeLoaded && (
@@ -719,7 +720,7 @@ export default function SpeechTranscriber({
                   aria-hidden="true"
                 />
               )}
-              {isLoadingModel ? "Loading" : "Load with these settings"}
+              {isLoadingModel ? "Caricamento" : "Carica con queste impostazioni"}
             </button>
           )}
           {status.ready && (
@@ -730,7 +731,7 @@ export default function SpeechTranscriber({
               disabled={isTranscribing}
             >
               <Square size={14} aria-hidden="true" />
-              Stop runtime
+              Arresta il motore
             </button>
           )}
         </div>
@@ -763,8 +764,8 @@ export default function SpeechTranscriber({
           )}
           {!status.backendInstalled && installedModels.length > 0 && (
             <div className="text-progress transcribe-notice">
-              The whisper.cpp backend is not installed. Install it in Models,
-              then refresh.
+              Il motore Whisper non è installato. Riavvia il programma di
+              avvio per completare la preparazione, poi aggiorna l’elenco.
             </div>
           )}
 
@@ -774,15 +775,15 @@ export default function SpeechTranscriber({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            aria-label="Record or drop an audio file"
+            aria-label="Registra o trascina un file audio"
           >
             {isRecording ? (
               <button
                 type="button"
                 className="transcribe-record-btn recording"
                 onClick={stopRecording}
-                aria-label="Stop recording"
-                title="Stop recording"
+                aria-label="Termina la registrazione"
+                title="Termina la registrazione"
               >
                 <Square size={22} fill="currentColor" aria-hidden="true" />
               </button>
@@ -792,8 +793,8 @@ export default function SpeechTranscriber({
                 className="transcribe-record-btn"
                 onClick={startRecording}
                 disabled={isTranscribing || isConvertingAudio}
-                aria-label="Start recording"
-                title="Start recording"
+                aria-label="Avvia la registrazione"
+                title="Avvia la registrazione"
               >
                 <Mic size={28} aria-hidden="true" />
               </button>
@@ -801,7 +802,7 @@ export default function SpeechTranscriber({
 
             {isRecording ? (
               <div className="transcribe-dropzone-title" aria-live="polite">
-                Recording{" "}
+                Registrazione in corso{" "}
                 <span className="transcribe-elapsed">
                   {formatClock(recordingSeconds)}
                 </span>
@@ -809,13 +810,13 @@ export default function SpeechTranscriber({
             ) : (
               <div className="transcribe-dropzone-title">
                 {isDragging
-                  ? "Drop to add this audio"
+                  ? "Rilascia per aggiungere questo audio"
                   : "Registra o carica un file audio"}
               </div>
             )}
             <div className="transcribe-dropzone-hint">
-              WAV, MP3, M4A, OGG, FLAC or WebM. Audio is converted to 16 kHz
-              mono on this device.
+              WAV, MP3, M4A, OGG, FLAC o WebM. L’audio viene convertito
+              su questo PC a 16 kHz, con un solo canale.
             </div>
 
             <div className="transcribe-dropzone-actions">
@@ -826,7 +827,7 @@ export default function SpeechTranscriber({
                     className="transcribe-spin"
                     aria-hidden="true"
                   />
-                  Converting audio
+                  Conversione dell’audio
                 </span>
               ) : (
                 <label
@@ -852,8 +853,8 @@ export default function SpeechTranscriber({
                 className="chat-composer-chip transcribe-select-chip"
                 title={
                   isEnglishOnly
-                    ? "This model only understands English"
-                    : "Spoken language"
+                    ? "Questo modello riconosce solo l’inglese"
+                    : "Lingua parlata"
                 }
               >
                 <Languages size={15} aria-hidden="true" />
@@ -862,7 +863,7 @@ export default function SpeechTranscriber({
                 </span>
                 <ChevronDown size={14} aria-hidden="true" />
                 <select
-                  aria-label="Spoken language"
+                  aria-label="Lingua parlata"
                   value={language}
                   onChange={(event) => setLanguage(event.target.value)}
                   disabled={isTranscribing}
@@ -882,7 +883,7 @@ export default function SpeechTranscriber({
                 disabled={isTranscribing}
               >
                 <ArrowRightLeft size={15} aria-hidden="true" />
-                Translate to English
+                Traduci in inglese
               </button>
             </div>
           </section>
@@ -912,8 +913,8 @@ export default function SpeechTranscriber({
                           aria-hidden="true"
                         />
                         {isLoadingModel
-                          ? "Loading model"
-                          : "Transcribing locally"}
+                          ? "Caricamento del modello"
+                          : "Trascrizione su questo PC"}
                       </span>
                     )}
                   </div>
@@ -933,7 +934,7 @@ export default function SpeechTranscriber({
                       onClick={handleCancel}
                     >
                       <Square size={13} aria-hidden="true" />
-                      Cancel
+                      Annulla
                     </button>
                   ) : (
                     <>
@@ -942,8 +943,8 @@ export default function SpeechTranscriber({
                         className="icon-btn danger"
                         onClick={clearCurrentAudio}
                         disabled={isRecording}
-                        aria-label="Remove audio"
-                        title="Remove audio"
+                        aria-label="Rimuovi audio"
+                        title="Rimuovi audio"
                       >
                         <X size={16} aria-hidden="true" />
                       </button>
@@ -958,8 +959,8 @@ export default function SpeechTranscriber({
                         }
                       >
                         {transcribedBlob === audioBlob
-                          ? "Transcribe again"
-                          : "Transcribe"}
+                          ? "Trascrivi di nuovo"
+                          : "Trascrivi"}
                       </button>
                     </>
                   )}
@@ -969,7 +970,7 @@ export default function SpeechTranscriber({
           )}
 
           {result && (
-            <section className="transcribe-result" aria-label="Transcript">
+            <section className="transcribe-result" aria-label="Trascrizione">
               <div className="transcribe-result-header">
                 <h2 className="transcribe-result-title" title={transcriptTitle}>
                   {transcriptTitle}
@@ -983,20 +984,20 @@ export default function SpeechTranscriber({
                     disabled={!hasSegments}
                     title={
                       hasSegments
-                        ? "Show timestamps"
-                        : "This transcript has no timestamps"
+                        ? "Mostra i riferimenti temporali"
+                        : "Questa trascrizione non ha riferimenti temporali"
                     }
                   >
                     <Clock size={14} aria-hidden="true" />
-                    Timestamps
+                    Riferimenti temporali
                   </button>
                   <button
                     type="button"
                     className="icon-btn"
                     onClick={copyText}
                     disabled={!resultText.trim()}
-                    aria-label={copied ? "Copied" : "Copy transcript"}
-                    title={copied ? "Copied" : "Copy transcript"}
+                    aria-label={copied ? "Copiato" : "Copia trascrizione"}
+                    title={copied ? "Copiato" : "Copia trascrizione"}
                   >
                     {copied ? (
                       <Check size={16} aria-hidden="true" />
@@ -1044,8 +1045,8 @@ export default function SpeechTranscriber({
                   className="transcribe-text"
                   value={resultText}
                   onChange={(event) => setResultText(event.target.value)}
-                  aria-label="Transcript text"
-                  placeholder="No speech was found in this audio."
+                  aria-label="Testo della trascrizione"
+                  placeholder="Non è stato rilevato parlato in questo audio."
                   spellCheck={false}
                 />
               )}

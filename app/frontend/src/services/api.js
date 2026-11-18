@@ -25,7 +25,7 @@ export function formatBytes(bytes) {
 
 export function normalizeModel(model) {
   if (typeof model === "string") {
-    return { filename: model, sizeBytes: 0, size: "Unknown" };
+    return { filename: model, sizeBytes: 0, size: "Sconosciuto" };
   }
   return {
     filename: model?.filename || model?.name || "",
@@ -33,8 +33,8 @@ export function normalizeModel(model) {
     sizeBytes: Number(model?.sizeBytes || 0),
     size:
       model?.size ||
-      (model?.sizeBytes ? formatBytes(model.sizeBytes) : "Unknown"),
-    format: model?.format || "Local Weights File",
+      (model?.sizeBytes ? formatBytes(model.sizeBytes) : "Sconosciuto"),
+    format: model?.format || "File locale dei pesi",
     backendType: model?.backendType || "",
     resolution: model?.resolution || "",
     isProjector: Boolean(model?.isProjector),
@@ -48,7 +48,7 @@ export function normalizeModel(model) {
 
 async function readJsonResponse(
   res,
-  fallbackMessage = "The local server returned an invalid response.",
+  fallbackMessage = "Il server locale ha restituito una risposta non valida.",
 ) {
   const text = await res.text();
   let data = {};
@@ -59,7 +59,7 @@ async function readJsonResponse(
       text.trim().startsWith("<!doctype") || text.trim().startsWith("<html");
     throw new Error(
       looksLikeHtml
-        ? "The local server is serving an older frontend/API. Restart Local Studio."
+        ? "Il server locale usa una versione precedente dell’app. Riavvia Local Studio."
         : fallbackMessage,
     );
   }
@@ -67,10 +67,10 @@ async function readJsonResponse(
   if (!res.ok || data.ok === false) {
     if (data.error === "Unknown API endpoint") {
       throw new Error(
-        "Restart Local Studio so the local server loads the latest API.",
+        "Riavvia Local Studio per caricare la versione aggiornata del server.",
       );
     }
-    throw new Error(data.error || `Request failed (HTTP ${res.status})`);
+    throw new Error(data.error || `Richiesta non riuscita (HTTP ${res.status})`);
   }
   return data;
 }
@@ -81,7 +81,7 @@ export async function getHealth() {
     const data = await res.json();
     if (!res.ok)
       throw new Error(
-        data.error || `Health request failed (HTTP ${res.status})`,
+        data.error || `Verifica del server non riuscita (HTTP ${res.status})`,
       );
     return {
       ...data,
@@ -92,7 +92,7 @@ export async function getHealth() {
       ok: false,
       stale: true,
       build: "unknown",
-      issues: [err.message || "Could not reach the local server."],
+      issues: [err.message || "Impossibile collegarsi al server locale. Verifica che il programma di avvio sia aperto."],
       checks: [],
       ports: {},
     };
@@ -103,7 +103,7 @@ export async function getDiagnostics() {
   const res = await fetch("/api/diagnostics");
   return await readJsonResponse(
     res,
-    "The local server returned invalid diagnostics.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -135,7 +135,7 @@ export async function getLlmStatus() {
     const res = await fetch("/api/llm/status");
     return await readJsonResponse(
       res,
-      "The local server returned invalid text backend status.",
+      "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
     );
   } catch (err) {
     return {
@@ -152,7 +152,7 @@ export async function listLlmModels() {
   const res = await fetch("/api/llm/models");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid text model data.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return (data.models || []).map(normalizeModel);
 }
@@ -161,7 +161,7 @@ export async function listLlmConversations() {
   const res = await fetch("/api/llm/conversations");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid chat history.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.conversations || [];
 }
@@ -174,7 +174,7 @@ export async function saveLlmConversation(conversation) {
   });
   const data = await readJsonResponse(
     res,
-    "The local server returned an invalid chat save response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.conversation;
 }
@@ -187,7 +187,7 @@ export async function deleteLlmConversation(id) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid chat delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -216,7 +216,7 @@ export async function startLlm(model, options = {}) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid text backend response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -224,7 +224,7 @@ export async function stopLlm() {
   const res = await fetch("/api/llm/stop", { method: "POST" });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid text backend response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -251,10 +251,10 @@ export async function chatWithLlm(messages, options = {}) {
   });
   const data = await readJsonResponse(
     res,
-    "The local text model returned an invalid response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error("The text model returned an empty response.");
+  if (!content) throw new Error("Il modello di testo ha restituito una risposta vuota.");
   return {
     content,
     usage: data?.usage || null,
@@ -295,11 +295,11 @@ export async function streamChatWithLlm(
   if (!res.ok) {
     const data = await readJsonResponse(
       res,
-      `Chat request failed (HTTP ${res.status}).`,
+      `Richiesta alla chat non riuscita (HTTP ${res.status}).`,
     );
-    throw new Error(data.error || `Chat request failed (HTTP ${res.status}).`);
+    throw new Error(data.error || `Richiesta alla chat non riuscita (HTTP ${res.status}).`);
   }
-  if (!res.body) throw new Error("Streaming is not supported by this browser.");
+  if (!res.body) throw new Error("Questo browser non supporta la ricezione progressiva delle risposte.");
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder("utf-8");
@@ -356,7 +356,7 @@ export async function streamChatWithLlm(
         typeof parsed.error === "string"
           ? parsed.error
           : parsed.error.message ||
-              "The text model returned a streaming error.",
+              "Il modello di testo ha segnalato un errore durante la risposta.",
       );
     }
     if (eventName === "web_sources") {
@@ -409,7 +409,7 @@ export async function streamChatWithLlm(
 
     if (!finished && buffer.trim()) consumeEvent(buffer);
     if (!content && !reasoningContent)
-      throw new Error("The text model returned an empty streamed response.");
+      throw new Error("Il modello di testo non ha prodotto una risposta.");
     return {
       content,
       reasoningContent,
@@ -434,7 +434,7 @@ export async function downloadLlmModel(url, filename = null) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid text download response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -455,7 +455,7 @@ export async function deleteLlmModel(filename) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid text model delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -464,7 +464,7 @@ export async function getSpeechStatus() {
     const res = await fetch("/api/speech/status");
     return await readJsonResponse(
       res,
-      "The local server returned invalid speech backend status.",
+      "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
     );
   } catch (err) {
     return {
@@ -481,7 +481,7 @@ export async function listSpeechModels() {
   const res = await fetch("/api/speech/models");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid speech model data.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.models || [];
 }
@@ -499,7 +499,7 @@ export async function startSpeech(model, options = {}) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid speech start response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -507,7 +507,7 @@ export async function stopSpeech() {
   const res = await fetch("/api/speech/stop", { method: "POST" });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid speech stop response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -530,7 +530,7 @@ export async function transcribeSpeech(fileOrBlob, options = {}) {
   });
   const data = await readJsonResponse(
     res,
-    "The local server returned an invalid transcription response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.transcription;
 }
@@ -548,7 +548,7 @@ export async function downloadSpeechModel(modelIdOrUrl, filename = null) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid speech download response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -569,7 +569,7 @@ export async function deleteSpeechModel(filename) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid speech model delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -577,7 +577,7 @@ export async function listSpeechTranscriptions() {
   const res = await fetch("/api/speech/transcriptions");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid transcription history.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.transcriptions || [];
 }
@@ -590,7 +590,7 @@ export async function deleteSpeechTranscription(filename) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid speech transcription delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -599,7 +599,7 @@ export async function getTtsStatus() {
     const res = await fetch("/api/tts/status");
     return await readJsonResponse(
       res,
-      "The local server returned invalid TTS runtime status.",
+      "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
     );
   } catch (err) {
     return {
@@ -617,7 +617,7 @@ export async function listTtsModels() {
   const res = await fetch("/api/tts/models");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid TTS model data.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.models || [];
 }
@@ -634,7 +634,7 @@ export async function startTts(model, options = {}) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid TTS start response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -642,7 +642,7 @@ export async function stopTts() {
   const res = await fetch("/api/tts/stop", { method: "POST" });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid TTS stop response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -660,7 +660,7 @@ export async function speakTts(text, options = {}) {
   });
   const data = await readJsonResponse(
     res,
-    "The local server returned an invalid TTS response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.output;
 }
@@ -676,7 +676,7 @@ export async function downloadTtsModel(modelIdOrUrl, filename = null) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid TTS download response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -688,7 +688,7 @@ export async function deleteTtsModel(filename) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid TTS model delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -696,7 +696,7 @@ export async function listTtsOutputs() {
   const res = await fetch("/api/tts/outputs");
   const data = await readJsonResponse(
     res,
-    "The local server returned invalid TTS output history.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
   return data.outputs || [];
 }
@@ -709,7 +709,7 @@ export async function deleteTtsOutput(filename) {
   });
   return await readJsonResponse(
     res,
-    "The local server returned an invalid TTS output delete response.",
+    "Il server locale ha restituito dati non validi. Riavvia Local Studio e riprova.",
   );
 }
 
@@ -753,7 +753,7 @@ function uploadModelFileToEndpoint(file, endpoint, onProgress, signal) {
         progress: (event.loaded / event.total) * 100,
         speed_mb_s: speedBytes / (1024 * 1024),
         eta_secs: remainingBytes / Math.max(1, speedBytes),
-        status: "Copying to models folder...",
+        status: "Copia nella cartella dei modelli...",
       });
     };
 
@@ -770,21 +770,21 @@ function uploadModelFileToEndpoint(file, endpoint, onProgress, signal) {
             progress: 100,
             speed_mb_s: 0,
             eta_secs: 0,
-            status: "Import complete",
+            status: "Importazione completata",
           });
         }
         resolve(data);
       } else {
-        reject(new Error(data.error || `Import failed (HTTP ${xhr.status})`));
+        reject(new Error(data.error || `Importazione non riuscita (HTTP ${xhr.status})`));
       }
     };
 
     xhr.onerror = () =>
-      reject(new Error("Import failed while uploading the file."));
+      reject(new Error("Importazione non riuscita durante il trasferimento del file."));
     xhr.onabort = () =>
       reject(
         new DOMException(
-          abortedByUser ? "Import cancelled by user." : "Import aborted.",
+          abortedByUser ? "Importazione annullata." : "Importazione interrotta.",
           "AbortError",
         ),
       );

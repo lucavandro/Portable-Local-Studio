@@ -134,7 +134,7 @@ test("model imports retry locked files and explain large-drive failures", () => 
   assert.match(server, /function withFileRetrySync/);
   assert.match(server, /function replaceFileWithRetry/);
   assert.match(server, /fs\.openSync\(tempPath, "w"\)/);
-  assert.match(server, /FAT32 files are limited to 4 GB/);
+  assert.match(server, /FAT32 ha un limite di 4 GB per file/);
   assert.match(server, /ensureStorageCapacity\(targetDir/);
 });
 

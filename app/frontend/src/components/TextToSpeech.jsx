@@ -1,3 +1,4 @@
+import { describeUiError } from "../utils/uiError";
 import { ITALIAN_VOICES, normalizeTtsVoice } from "../utils/ttsVoice";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -249,7 +250,7 @@ export default function TextToSpeech({
   }, [ttsSettings?.model]);
 
   useEffect(() => {
-    refresh().catch((err) => showAlert?.({ title: "Couldn't read voice status", message: err.message || String(err), danger: true }));
+    refresh().catch((err) => showAlert?.({ title: "Stato della voce non disponibile", message: describeUiError(err), danger: true }));
     const interval = setInterval(() => {
       refresh().catch(() => {});
     }, 2500);
@@ -330,7 +331,7 @@ export default function TextToSpeech({
       updateTtsSetting("model", modelName);
       await refresh();
     } catch (err) {
-      showAlert?.({ title: "Couldn't load the voice model", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Caricamento del modello vocale non riuscito", message: describeUiError(err), danger: true });
     } finally {
       setIsLoadingModel(false);
     }
@@ -341,12 +342,12 @@ export default function TextToSpeech({
       await stopTts();
       await refresh();
     } catch (err) {
-      showAlert?.({ title: "Couldn't stop the voice runtime", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Impossibile arrestare il motore vocale", message: describeUiError(err), danger: true });
     }
   };
 
   const handleRefresh = () => {
-    refresh().catch((err) => showAlert?.({ title: "Couldn't read voice status", message: err.message || String(err), danger: true }));
+    refresh().catch((err) => showAlert?.({ title: "Stato della voce non disponibile", message: describeUiError(err), danger: true }));
   };
 
   const handleGenerate = async () => {
@@ -380,7 +381,7 @@ export default function TextToSpeech({
       await onOutputsChanged?.();
     } catch (err) {
       if (err.name !== "AbortError") {
-        showAlert?.({ title: "Couldn't generate speech", message: err.message || String(err), danger: true });
+        showAlert?.({ title: "Generazione della voce non riuscita", message: describeUiError(err), danger: true });
       }
     } finally {
       abortRef.current = null;
@@ -441,12 +442,12 @@ export default function TextToSpeech({
       if (perPart) secondsLeft = Math.max(1, Math.round(((total - done) * perPart - (now - partAt)) / 1000));
     }
     const label = isLoadingModel || progress.phase === "Loading voice model"
-      ? "Loading voice model"
+      ? "Caricamento del modello vocale"
       : progress.phase === "Saving"
-        ? "Saving clip"
+        ? "Salvataggio dell’audio"
         : total > 1
-          ? `Generating speech · part ${Math.min(done + 1, total)} of ${total}`
-          : "Generating speech";
+          ? `Generazione della voce · parte ${Math.min(done + 1, total)} di ${total}`
+          : "Generazione della voce";
     return { percent, label, elapsed: Math.round(elapsed), secondsLeft };
   })();
 
@@ -487,7 +488,7 @@ export default function TextToSpeech({
     audio.play().catch((err) => {
       setPlayingId(null);
       if (err.name !== "AbortError") {
-        showAlert?.({ title: "Couldn't play the clip", message: err.message || String(err), danger: true });
+        showAlert?.({ title: "Riproduzione dell’audio non riuscita", message: describeUiError(err), danger: true });
       }
     });
   };
@@ -541,12 +542,12 @@ export default function TextToSpeech({
     }
     const itemId = clip.filename || clip.metadata;
     if (!itemId) return;
-    const preview = (clip.text || clip.displayName || "this clip").slice(0, 60);
+    const preview = (clip.text || clip.displayName || "questo audio").slice(0, 60);
     const ok = showConfirm
       ? await showConfirm({
-        title: "Delete clip",
-        message: `Delete "${preview}"? This can't be undone.`,
-        confirmLabel: "Delete",
+        title: "Elimina audio",
+        message: `Eliminare "${preview}"? Questa operazione non può essere annullata.`,
+        confirmLabel: "Elimina",
         danger: true,
       })
       : true;
@@ -557,20 +558,20 @@ export default function TextToSpeech({
       setSessionClips((prev) => prev.filter((item) => clipId(item) !== id));
       await onOutputsChanged?.();
     } catch (err) {
-      showAlert?.({ title: "Couldn't delete the clip", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Eliminazione dell’audio non riuscita", message: describeUiError(err), danger: true });
     }
   };
 
   const isLoaded = status.ready && status.settings?.model === selectedModel;
   const selectedModelInfo = installedModels.find((model) => model.filename === selectedModel || model.id === selectedModel);
-  const modelLabel = selectedModelInfo?.name || selectedModel || (installedModels.length ? "Choose a model" : "Nessun modello voce");
-  const runtimeLabel = status.runtimeInstalled ? (status.ready ? "Ready" : "Installed") : "Runtime missing";
+  const modelLabel = selectedModelInfo?.name || selectedModel || (installedModels.length ? "Scegli un modello" : "Nessun modello voce");
+  const runtimeLabel = status.runtimeInstalled ? (status.ready ? "Pronto" : "Installato") : "Motore non installato";
   const charCount = text.trim().length;
   const canGenerate = Boolean(text.trim()) && Boolean(selectedModel) && status.runtimeInstalled;
 
   let notice = "";
   if (installedModels.length === 0) notice = "Scarica Kokoro Q8 in Modelli → Voce per iniziare.";
-  else if (!status.runtimeInstalled) notice = "The voice runtime isn't installed. Run the TTS setup script for this platform.";
+  else if (!status.runtimeInstalled) notice = "Il motore vocale non è installato. Riavvia il programma di avvio per completare la preparazione.";
 
   useEffect(() => {
     if (dictation !== "recording") return undefined;
@@ -590,7 +591,7 @@ export default function TextToSpeech({
       dictationRef.current = await createMicRecorder();
       setDictation("recording");
     } catch (err) {
-      showAlert?.({ title: "Microphone unavailable", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Microfono non disponibile", message: describeUiError(err), danger: true });
     }
   };
 
@@ -612,17 +613,17 @@ export default function TextToSpeech({
       const installed = speechModels.filter((model) => model.installed);
       const model = installed.find((item) => item.filename === speechStatus?.settings?.model)?.filename
         || installed[0]?.filename;
-      if (!model) throw new Error("Install a speech model on the Models screen to use dictation.");
+      if (!model) throw new Error("Per dettare un testo, scarica un modello di trascrizione dalla pagina Modelli.");
       const result = await transcribeSpeech(wav, { model, language: "auto", filename: "dictation.wav", save: false });
       const spoken = String(result?.text || "").replace(/\s+/g, " ").trim();
       if (!spoken) {
-        showAlert?.({ title: "Didn't catch that", message: "No speech was heard. Try again a little closer to the mic." });
+        showAlert?.({ title: "Nessun parlato rilevato", message: "Non è stato rilevato parlato. Riprova avvicinandoti al microfono." });
         return;
       }
       setText((prev) => (prev.trim() ? `${prev.replace(/\s+$/, "")} ${spoken}` : spoken));
       setTimeout(() => textareaRef.current?.focus(), 0);
     } catch (err) {
-      showAlert?.({ title: "Couldn't transcribe", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Trascrizione non riuscita", message: describeUiError(err), danger: true });
     } finally {
       setDictation("idle");
     }
@@ -642,8 +643,8 @@ export default function TextToSpeech({
               if (canGenerate) handleGenerate();
             }
           }}
-          placeholder={dictation === "recording" ? "Listening… press Done when you've finished" : dictation === "transcribing" ? "Turning your speech into text…" : "Type something to speak, or use the mic"}
-          aria-label="Text to speak"
+          placeholder={dictation === "recording" ? "Ascolto in corso… premi Fine quando hai terminato" : dictation === "transcribing" ? "Trascrizione della tua voce…" : "Scrivi un testo da leggere o usa il microfono"}
+          aria-label="Testo da leggere"
           maxLength={MAX_CHARS}
           rows={1}
         />
@@ -657,14 +658,14 @@ export default function TextToSpeech({
                 onClick={() => toggleMenu("voice")}
                 aria-haspopup="menu"
                 aria-expanded={openMenu === "voice"}
-                title="Voice"
+                title="Voce"
               >
                 <User size={15} aria-hidden="true" />
                 <span>{currentVoice?.name || selectedVoice}</span>
               </button>
               {openMenu === "voice" && (
-                <div className="chat-model-menu up voice-menu-left" role="menu" aria-label="Voices">
-                  <div className="chat-model-menu-label">Voices</div>
+                <div className="chat-model-menu up voice-menu-left" role="menu" aria-label="Voci">
+                  <div className="chat-model-menu-label">Voci</div>
                   {voices.map((voice) => (
                     <button
                       type="button"
@@ -694,16 +695,16 @@ export default function TextToSpeech({
                 onClick={() => toggleMenu("speed")}
                 aria-haspopup="dialog"
                 aria-expanded={openMenu === "speed"}
-                title="Speed"
+                title="Velocità"
               >
                 <Gauge size={15} aria-hidden="true" />
                 <span>{formatSpeed(speed)}</span>
               </button>
               {openMenu === "speed" && (
-                <div className="popover voice-popover-up" role="dialog" aria-label="Speed">
+                <div className="popover voice-popover-up" role="dialog" aria-label="Velocità">
                   <div className="field">
                     <div className="voice-speed-head">
-                      <label className="field-label" htmlFor="voice-speed">Speed</label>
+                      <label className="field-label" htmlFor="voice-speed">Velocità</label>
                       <span className="voice-speed-value">{formatSpeed(speed)}</span>
                     </div>
                     <input
@@ -723,7 +724,7 @@ export default function TextToSpeech({
                   </div>
                   {speed !== 1 && (
                     <button type="button" className="btn voice-speed-reset" onClick={() => updateTtsSetting("speed", 1)}>
-                      Reset to 1×
+                      Ripristina a 1×
                     </button>
                   )}
                 </div>
@@ -736,18 +737,18 @@ export default function TextToSpeech({
               <div className="voice-dictation" role="status">
                 <span className="voice-dictation-dot" aria-hidden="true" />
                 <span className="voice-dictation-time">{formatClock(dictationSeconds)}</span>
-                <button type="button" className="icon-btn" onClick={cancelDictation} aria-label="Cancel recording" title="Cancel">
+                <button type="button" className="icon-btn" onClick={cancelDictation} aria-label="Annulla registrazione" title="Annulla">
                   <X size={16} aria-hidden="true" />
                 </button>
                 <button type="button" className="btn voice-dictation-done" onClick={finishDictation}>
                   <Check size={15} aria-hidden="true" />
-                  <span>Done</span>
+                  <span>Fine</span>
                 </button>
               </div>
             ) : dictation === "transcribing" ? (
               <span className="voice-generating" role="status">
                 <LoaderCircle size={14} className="voice-spin" aria-hidden="true" />
-                Transcribing
+                Trascrizione in corso
               </span>
             ) : (
               <button
@@ -755,8 +756,8 @@ export default function TextToSpeech({
                 className="icon-btn voice-mic-btn"
                 onClick={startDictation}
                 disabled={isGenerating}
-                aria-label="Dictate with the microphone"
-                title="Dictate: speak and it becomes text"
+                aria-label="Detta un testo con il microfono"
+                title="Dettatura: trasforma la tua voce in testo"
               >
                 <Mic size={18} aria-hidden="true" />
               </button>
@@ -764,11 +765,11 @@ export default function TextToSpeech({
             {isGenerating ? (
               <span className="voice-generating" role="status">
                 <LoaderCircle size={14} className="voice-spin" aria-hidden="true" />
-                {isLoadingModel ? "Loading model" : progressView?.percent != null ? `Generating ${progressView.percent}%` : "Generating"}
+                {isLoadingModel ? "Caricamento del modello" : progressView?.percent != null ? `Generazione ${progressView.percent}%` : "Generazione"}
               </span>
             ) : (
               <span className="voice-char-count" aria-live="polite">
-                {charCount.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+                {charCount.toLocaleString("it-IT")} / {MAX_CHARS.toLocaleString("it-IT")}
               </span>
             )}
             {isGenerating ? (
@@ -776,8 +777,8 @@ export default function TextToSpeech({
                 type="button"
                 className="chat-composer-stop-btn"
                 onClick={handleCancel}
-                aria-label="Cancel generation"
-                title="Cancel generation"
+                aria-label="Annulla generazione"
+                title="Annulla generazione"
               >
                 <Square size={14} fill="currentColor" aria-hidden="true" />
               </button>
@@ -787,8 +788,8 @@ export default function TextToSpeech({
                 className="chat-composer-send-btn voice-speak-btn"
                 onClick={handleGenerate}
                 disabled={!canGenerate || dictation !== "idle"}
-                aria-label="Speak"
-                title={!selectedModel ? "Choose a voice model first" : !text.trim() ? "Type something to speak" : "Speak (Enter)"}
+                aria-label="Leggi"
+                title={!selectedModel ? "Scegli prima un modello vocale" : !text.trim() ? "Scrivi un testo da leggere" : "Leggi (Invio)"}
               >
                 <Volume2 size={16} aria-hidden="true" />
                 <span>Leggi</span>
@@ -906,7 +907,7 @@ export default function TextToSpeech({
       setCopiedId(id);
       setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1500);
     } catch (err) {
-      showAlert?.({ title: "Couldn't copy the text", message: err.message || String(err), danger: true });
+      showAlert?.({ title: "Impossibile copiare il testo", message: describeUiError(err), danger: true });
     }
   };
 
@@ -920,18 +921,18 @@ export default function TextToSpeech({
   };
 
   const player = loadedClip && (
-    <div className="voice-player" role="region" aria-label="Audio player">
+    <div className="voice-player" role="region" aria-label="Lettore audio">
       <div className="voice-player-top">
         <div className="voice-player-controls">
-          <button type="button" className="icon-btn" onClick={() => skipBy(-10)} aria-label="Back 10 seconds" title="Back 10s">
+          <button type="button" className="icon-btn" onClick={() => skipBy(-10)} aria-label="Indietro di 10 secondi" title="Indietro di 10 s">
             <RotateCcw size={17} aria-hidden="true" />
           </button>
           <button
             type="button"
             className="voice-player-play"
             onClick={() => togglePlay(loadedClip)}
-            aria-label={playingId === loadedId ? "Pause" : "Play"}
-            title={playingId === loadedId ? "Pause (Space)" : "Play (Space)"}
+            aria-label={playingId === loadedId ? "Pausa" : "Riproduci"}
+            title={playingId === loadedId ? "Pausa (barra spaziatrice)" : "Riproduci (barra spaziatrice)"}
           >
             {playingId === loadedId ? (
               <Pause size={17} fill="currentColor" aria-hidden="true" />
@@ -939,25 +940,25 @@ export default function TextToSpeech({
               <Play size={17} fill="currentColor" className="voice-play-icon" aria-hidden="true" />
             )}
           </button>
-          <button type="button" className="icon-btn" onClick={() => skipBy(10)} aria-label="Forward 10 seconds" title="Forward 10s">
+          <button type="button" className="icon-btn" onClick={() => skipBy(10)} aria-label="Avanti di 10 secondi" title="Avanti di 10 s">
             <RotateCw size={17} aria-hidden="true" />
           </button>
         </div>
 
         <div className="voice-player-info">
-          <span className="voice-player-title">{loadedClip.text || loadedClip.displayName || "Untitled clip"}</span>
+          <span className="voice-player-title">{loadedClip.text || loadedClip.displayName || "Audio senza titolo"}</span>
           <span className="voice-player-sub">{loadedClip.voiceName || loadedClip.voice}</span>
         </div>
 
         <div className="voice-player-tools">
-          <div className="voice-player-rate" role="group" aria-label="Playback speed">
+          <div className="voice-player-rate" role="group" aria-label="Velocità di riproduzione">
             <button
               type="button"
               className="voice-player-rate-btn"
               onClick={() => stepRate(-1)}
               disabled={playerPrefs.rate === PLAYBACK_RATES[0]}
-              aria-label="Slower"
-              title="Slower"
+              aria-label="Più lento"
+              title="Più lento"
             >
               <Minus size={14} aria-hidden="true" />
             </button>
@@ -965,8 +966,8 @@ export default function TextToSpeech({
               type="button"
               className="voice-player-rate-value"
               onClick={() => setPlayerPrefs((prev) => ({ ...prev, rate: 1 }))}
-              aria-label={`Playback speed ${formatSpeed(playerPrefs.rate)}, reset to 1×`}
-              title="Reset to 1×"
+              aria-label={`Velocità di riproduzione ${formatSpeed(playerPrefs.rate)}, ripristina a 1×`}
+              title="Ripristina a 1×"
             >
               {formatSpeed(playerPrefs.rate)}
             </button>
@@ -975,8 +976,8 @@ export default function TextToSpeech({
               className="voice-player-rate-btn"
               onClick={() => stepRate(1)}
               disabled={playerPrefs.rate === PLAYBACK_RATES[PLAYBACK_RATES.length - 1]}
-              aria-label="Faster"
-              title="Faster"
+              aria-label="Più veloce"
+              title="Più veloce"
             >
               <Plus size={14} aria-hidden="true" />
             </button>
@@ -987,8 +988,8 @@ export default function TextToSpeech({
               type="button"
               className="icon-btn"
               onClick={() => setPlayerPrefs((prev) => ({ ...prev, muted: !prev.muted }))}
-              aria-label={playerPrefs.muted ? "Unmute" : "Mute"}
-              title={playerPrefs.muted ? "Unmute" : "Mute"}
+              aria-label={playerPrefs.muted ? "Riattiva audio" : "Disattiva audio"}
+              title={playerPrefs.muted ? "Riattiva audio" : "Disattiva audio"}
             >
               {playerPrefs.muted || playerPrefs.volume === 0 ? <VolumeX size={17} aria-hidden="true" /> : <Volume2 size={17} aria-hidden="true" />}
             </button>
@@ -1009,12 +1010,12 @@ export default function TextToSpeech({
             type="button"
             className="icon-btn"
             onClick={() => downloadUrl(loadedClip.url, loadedClip.audioFile || "tts.wav")}
-            aria-label="Download WAV"
-            title="Download WAV"
+            aria-label="Scarica WAV"
+            title="Scarica WAV"
           >
             <Download size={17} aria-hidden="true" />
           </button>
-          <button type="button" className="icon-btn" onClick={closePlayer} aria-label="Close player" title="Close player">
+          <button type="button" className="icon-btn" onClick={closePlayer} aria-label="Chiudi lettore" title="Chiudi lettore">
             <X size={17} aria-hidden="true" />
           </button>
         </div>
@@ -1031,8 +1032,8 @@ export default function TextToSpeech({
           value={Math.min(currentTime, playerDuration || 0)}
           onChange={(event) => seekTo(Number(event.target.value))}
           style={{ "--fill": `${playerPercent}%` }}
-          aria-label="Seek"
-          aria-valuetext={`${formatClock(currentTime)} of ${formatClock(playerDuration)}`}
+          aria-label="Posizione di riproduzione"
+          aria-valuetext={`${formatClock(currentTime)} di ${formatClock(playerDuration)}`}
         />
         <span className="voice-player-time">{formatClock(playerDuration)}</span>
       </div>
@@ -1061,7 +1062,7 @@ export default function TextToSpeech({
       <div className="page-scroll">
         <div className="page-column">
           <header className="page-header">
-            <h2 className="page-title">Voice</h2>
+            <h2 className="page-title">Voce</h2>
 
             <div ref={headerMenusRef} className="voice-header-tools">
               <div className="chat-model-picker">
@@ -1072,7 +1073,7 @@ export default function TextToSpeech({
                   disabled={isGenerating}
                   aria-haspopup="menu"
                   aria-expanded={openMenu === "model"}
-                  title={selectedModel || "Choose a Kokoro model"}
+                  title={selectedModel || "Scegli un modello Kokoro"}
                 >
                   {isLoadingModel ? (
                     <LoaderCircle size={14} className="voice-spin" aria-hidden="true" />
@@ -1084,11 +1085,11 @@ export default function TextToSpeech({
                 </button>
 
                 {openMenu === "model" && (
-                  <div className="chat-model-menu" role="menu" aria-label="Voice models">
-                    <div className="chat-model-menu-label">Voice models</div>
+                  <div className="chat-model-menu" role="menu" aria-label="Modelli vocali">
+                    <div className="chat-model-menu-label">Modelli vocali</div>
                     {installedModels.length === 0 && (
                       <div className="chat-model-menu-label voice-menu-empty">
-                        No models yet. Download one in Models.
+                        Nessun modello disponibile. Scaricalo dalla pagina Modelli.
                       </div>
                     )}
                     {installedModels.map((model) => {
@@ -1108,7 +1109,7 @@ export default function TextToSpeech({
                           title={model.filename}
                         >
                           <span className="chat-model-menu-name">{model.name || model.filename}</span>
-                          {active && <span className="chat-model-menu-badge">Loaded</span>}
+                          {active && <span className="chat-model-menu-badge">Caricato</span>}
                         </button>
                       );
                     })}
@@ -1122,7 +1123,7 @@ export default function TextToSpeech({
                         handleRefresh();
                       }}
                     >
-                      Refresh
+                      Aggiorna elenco
                     </button>
                   </div>
                 )}
@@ -1135,20 +1136,20 @@ export default function TextToSpeech({
                   onClick={() => toggleMenu("settings")}
                   aria-haspopup="dialog"
                   aria-expanded={openMenu === "settings"}
-                  aria-label="Runtime options"
-                  title="Runtime options"
+                  aria-label="Opzioni del motore"
+                  title="Opzioni del motore"
                 >
                   <Settings2 size={17} aria-hidden="true" />
                 </button>
                 {openMenu === "settings" && (
-                  <div className="popover voice-popover-down" role="dialog" aria-label="Runtime options">
+                  <div className="popover voice-popover-down" role="dialog" aria-label="Opzioni del motore">
                     <div className="voice-runtime-row">
-                      <span className="field-label">Runtime</span>
+                      <span className="field-label">Motore</span>
                       <span className={`tag ${status.ready ? "tag-success" : ""}`}>{runtimeLabel}</span>
                     </div>
                     {status.error && <p className="voice-runtime-error">{status.error}</p>}
                     <p className="field-hint voice-runtime-hint">
-                      Kokoro runs locally. Stopping the runtime frees its memory; it starts again when you generate.
+                      Kokoro funziona su questo PC. Arresta il motore per liberare memoria; si riavvierà alla prossima lettura.
                     </p>
                     <div className="voice-runtime-actions">
                       <button
@@ -1161,7 +1162,7 @@ export default function TextToSpeech({
                         disabled={!status.ready}
                       >
                         <Square size={13} aria-hidden="true" />
-                        Stop runtime
+                        Arresta il motore
                       </button>
                     </div>
                   </div>
@@ -1188,7 +1189,7 @@ export default function TextToSpeech({
               </div>
               <div className="voice-progress-meta">
                 {progressView.elapsed}s
-                {progressView.secondsLeft != null ? ` · about ${progressView.secondsLeft}s left` : ""}
+                {progressView.secondsLeft != null ? ` · circa ${progressView.secondsLeft} s rimanenti` : ""}
               </div>
             </div>
           )}
@@ -1210,7 +1211,7 @@ export default function TextToSpeech({
                   // Old clips stored generation time here; once loaded, the audio's own length is known
                   formatDuration(id === loadedId && playerDuration ? playerDuration * 1000 : clip.durationMs),
                 ].filter(Boolean).join(" · ");
-                const created = clip.createdAt ? new Date(clip.createdAt).toLocaleString() : "";
+                const created = clip.createdAt ? new Date(clip.createdAt).toLocaleString("it-IT") : "";
                 return (
                   <li
                     key={id}
@@ -1226,8 +1227,8 @@ export default function TextToSpeech({
                       className="voice-play-btn"
                       onClick={() => togglePlay(clip)}
                       disabled={!clip.url}
-                      aria-label={isPlaying ? "Pause clip" : "Play clip"}
-                      title={isPlaying ? "Pause" : "Play"}
+                      aria-label={isPlaying ? "Metti in pausa l’audio" : "Riproduci audio"}
+                      title={isPlaying ? "Pausa" : "Riproduci"}
                     >
                       {isPlaying ? (
                         <Pause size={15} fill="currentColor" aria-hidden="true" />
@@ -1237,7 +1238,7 @@ export default function TextToSpeech({
                     </button>
 
                     {id === loadedId ? (
-                      <div className="row-item-main voice-clip-main is-reading" title="Click a word to jump there">
+                      <div className="row-item-main voice-clip-main is-reading" title="Fai clic su una parola per ascoltare da quel punto">
                         <span className="row-item-title voice-clip-text">{readingText(clip)}</span>
                         {meta && (
                           <span className="row-item-meta voice-clip-meta">
@@ -1247,10 +1248,10 @@ export default function TextToSpeech({
                         )}
                         {isCutShort(clip, playerDuration) && (
                           <span className="voice-cut-short">
-                            {`The audio stops at about "…${spokenUpTo(clip, playerDuration)}". This clip was made before long text was supported, so the rest was never spoken.`}
+                            {`L’audio si interrompe circa a "…${spokenUpTo(clip, playerDuration)}". Questo audio è stato creato prima del supporto ai testi lunghi: la parte successiva non è stata letta.`}
                             <button type="button" className="btn voice-cut-short-btn" onClick={() => regenerateClip(clip)}>
                               <RotateCw size={14} aria-hidden="true" />
-                              <span>Regenerate in full</span>
+                              <span>Rigenera l’audio completo</span>
                             </button>
                           </span>
                         )}
@@ -1264,7 +1265,7 @@ export default function TextToSpeech({
                       title={created}
                     >
                       <span className={`row-item-title voice-clip-text ${isActive ? "" : "is-clamped"}`}>
-                        {clip.text || clip.displayName || clip.audioFile || "Untitled clip"}
+                        {clip.text || clip.displayName || clip.audioFile || "Audio senza titolo"}
                       </span>
                       {(meta || (isActive && created)) && (
                         <span className="row-item-meta voice-clip-meta">
@@ -1281,8 +1282,8 @@ export default function TextToSpeech({
                           type="button"
                           className="icon-btn"
                           onClick={() => copyClipText(clip)}
-                          aria-label={copiedId === id ? "Text copied" : "Copy text"}
-                          title={copiedId === id ? "Copied" : "Copy text"}
+                          aria-label={copiedId === id ? "Testo copiato" : "Copia testo"}
+                          title={copiedId === id ? "Copiato" : "Copia testo"}
                         >
                           {copiedId === id ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
                         </button>
@@ -1292,8 +1293,8 @@ export default function TextToSpeech({
                         className="icon-btn"
                         onClick={() => clip.url && downloadUrl(clip.url, clip.audioFile || "tts.wav")}
                         disabled={!clip.url}
-                        aria-label="Download WAV"
-                        title="Download WAV"
+                        aria-label="Scarica WAV"
+                        title="Scarica WAV"
                       >
                         <Download size={16} aria-hidden="true" />
                       </button>
@@ -1302,8 +1303,8 @@ export default function TextToSpeech({
                           type="button"
                           className="icon-btn danger"
                           onClick={(event) => handleDelete(clip, event)}
-                          aria-label="Delete clip"
-                          title="Delete clip"
+                          aria-label="Elimina audio"
+                          title="Elimina audio"
                         >
                           <Trash2 size={16} aria-hidden="true" />
                         </button>

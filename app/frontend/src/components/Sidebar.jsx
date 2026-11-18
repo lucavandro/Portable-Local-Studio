@@ -31,18 +31,18 @@ function readSidebarWidth() {
 }
 
 const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "gen",
+  "feb",
+  "mar",
+  "apr",
+  "mag",
+  "giu",
+  "lug",
+  "ago",
+  "set",
+  "ott",
+  "nov",
+  "dic",
 ];
 
 function formatGb(value) {
@@ -68,8 +68,8 @@ function friendlyFileTitle(name) {
   if (stamp) {
     const [, , month, day, hour, minute] = stamp;
     const h = Number(hour);
-    const time = `${h % 12 || 12}:${minute} ${h < 12 ? "AM" : "PM"}`;
-    return `Recording, ${MONTHS[Number(month) - 1]} ${Number(day)}, ${time}`;
+    const time = `${String(h).padStart(2, "0")}:${minute}`;
+    return `Registrazione del ${Number(day)} ${MONTHS[Number(month) - 1]}, ${time}`;
   }
   const words = base.replace(/[-_]+/g, " ").trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
@@ -263,7 +263,7 @@ function Sidebar({
         setActiveTab("chat");
       },
       remove: (e) => onDeleteConversation(conv.id, e),
-      deleteLabel: "Delete chat",
+      deleteLabel: "Elimina conversazione",
     }));
 
     const transcripts = speechTranscriptions.map((item) => ({
@@ -274,7 +274,7 @@ function Sidebar({
             item.sourceFilename ||
             item.textFile ||
             item.filename,
-        ) || "Transcript",
+        ) || "Trascrizione",
       time: toTime(item.modifiedAt || item.createdAt),
       isActive:
         activeTab === "speech" &&
@@ -284,13 +284,13 @@ function Sidebar({
         setActiveTab("speech");
       },
       remove: (e) => onDeleteSpeechTranscription?.(item, e),
-      deleteLabel: "Delete transcription",
+      deleteLabel: "Elimina trascrizione",
     }));
 
     return [
       {
         id: "chats",
-        label: "Chats",
+        label: "Conversazioni",
         items: chats.filter(matches).sort(newestFirst),
       },
       {
@@ -321,7 +321,7 @@ function Sidebar({
 
   const isNewChatActive = activeTab === "chat" && !activeConversationId;
   const deviceName =
-    specs.gpu_name && !specs.gpu_name.startsWith("Loading")
+    specs.gpu_name && !specs.gpu_name.startsWith("Caricamento")
       ? specs.gpu_name
       : specs.cpu_name;
   const hasResults = sections.some((section) => section.items.length > 0);
@@ -330,18 +330,18 @@ function Sidebar({
     <aside
       className={`sidebar ${collapsed ? "collapsed" : ""} ${resizing ? "resizing" : ""}`}
       style={{ "--sidebar-width": `${width}px` }}
-      aria-label="Sidebar"
+      aria-label="Barra laterale"
     >
       <div
         className="sidebar-resize-handle"
         role="separator"
         aria-orientation="vertical"
-        aria-label="Resize sidebar"
+        aria-label="Ridimensiona la barra laterale"
         aria-valuemin={SIDEBAR_MIN}
         aria-valuemax={SIDEBAR_MAX}
         aria-valuenow={width}
         tabIndex={0}
-        title="Drag to resize, double-click to reset"
+        title="Trascina per ridimensionare; fai doppio clic per ripristinare"
         onPointerDown={startResize}
         onDoubleClick={() => setWidth(SIDEBAR_DEFAULT)}
         onKeyDown={resizeWithKeys}
@@ -356,9 +356,9 @@ function Sidebar({
             type="button"
             className={`sidebar-icon-btn ${searchOpen ? "active" : ""}`}
             onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
-            aria-label="Search history"
+            aria-label="Cerca nella cronologia"
             aria-expanded={searchOpen}
-            title="Search history"
+            title="Cerca nella cronologia"
           >
             <Search size={20} />
           </button>
@@ -366,8 +366,8 @@ function Sidebar({
             type="button"
             className="sidebar-icon-btn"
             onClick={onToggleSidebar}
-            aria-label="Close sidebar"
-            title="Close sidebar"
+            aria-label="Chiudi la barra laterale"
+            title="Chiudi la barra laterale"
           >
             <PanelLeftClose size={20} />
           </button>
@@ -391,7 +391,7 @@ function Sidebar({
               type="button"
               className="sidebar-search-clear"
               onClick={() => setQuery("")}
-              aria-label="Clear search"
+              aria-label="Cancella ricerca"
             >
               <X size={14} />
             </button>
@@ -399,7 +399,7 @@ function Sidebar({
         </div>
       )}
 
-      <nav className="nav-list" aria-label="Main">
+      <nav className="nav-list" aria-label="Navigazione principale">
         <div
           className={`nav-item ${isNewChatActive ? "active" : ""}`}
           role="button"

@@ -217,7 +217,7 @@ let llmSettings = {
   backendBinary: "",
   supportsVision: false,
   visionMode: "none",
-  visionStatus: "Projector not loaded",
+  visionStatus: "Proiettore non caricato",
   flashAttn: true,
   cacheTypeK: "q8_0",
   cacheTypeV: "q8_0",
@@ -437,10 +437,10 @@ function describeStorageError(err, targetPath) {
   const target = path.basename(targetPath || "the destination file");
   if (err?.code === "ENOSPC" || err?.code === "EFBIG") {
     const detail = err?.message ? ` ${err.message}` : "";
-    return `Cannot write ${target}: the destination has insufficient usable space or its filesystem cannot store a file this large.${detail} Large models require an NTFS, exFAT, APFS, or ext4 drive; FAT32 files are limited to 4 GB.`;
+    return `Impossibile scrivere ${target}: spazio disponibile insufficiente o file troppo grande per il formato del disco.${detail} Per i file grandi usa NTFS, exFAT, APFS o ext4; FAT32 ha un limite di 4 GB per file.`;
   }
   if (RETRYABLE_FILE_CODES.has(err?.code)) {
-    return `Cannot access ${target} after several retries. Close programs scanning or using the file, allow this app through antivirus/ransomware protection, and retry.`;
+    return `Impossibile accedere a ${target} dopo diversi tentativi. Chiudi i programmi che usano il file e chiedi al docente di verificare antivirus e protezioni, poi riprova.`;
   }
   return err?.message || String(err);
 }
@@ -457,7 +457,7 @@ function ensureStorageCapacity(targetDir, requiredBytes) {
       bytes > availableBytes
     ) {
       const err = new Error(
-        `Only ${formatBytes(availableBytes)} is available, but ${formatBytes(bytes)} is required.`,
+        `Spazio disponibile: ${formatBytes(availableBytes)}. Spazio necessario: ${formatBytes(bytes)}.`,
       );
       err.code = "ENOSPC";
       throw err;
@@ -579,7 +579,7 @@ async function findAvailableLlmPort() {
   }
 
   throw new Error(
-    `No free LLM port found. Tried ${PREFERRED_LLM_PORT} and 28121-28160.`,
+    `Nessuna porta libera per la chat. Provate ${PREFERRED_LLM_PORT} e 28121-28160.`,
   );
 }
 
@@ -598,7 +598,7 @@ async function findAvailableSpeechPort() {
   }
 
   throw new Error(
-    `No free speech port found. Tried ${PREFERRED_SPEECH_PORT} and 28161-28190.`,
+    `Nessuna porta libera per la trascrizione. Provate ${PREFERRED_SPEECH_PORT} e 28161-28190.`,
   );
 }
 
@@ -798,10 +798,10 @@ function resolveSpeechModel(value) {
     getSpeechModels().find(
       (item) => item.id === raw || item.filename === raw,
     ) || getSpeechModels().find((item) => item.installed);
-  if (!model) throw new Error("Download or import a Whisper model first.");
+  if (!model) throw new Error("Scarica o importa prima un modello Whisper.");
   const modelPath = path.join(SPEECH_MODELS, path.basename(model.filename));
   if (!pathInside(modelPath, SPEECH_MODELS) || !fs.existsSync(modelPath)) {
-    throw new Error(`Speech model is not installed: ${model.filename}`);
+    throw new Error(`Modello di trascrizione non installato: ${model.filename}`);
   }
   if (fs.statSync(modelPath).size > 200 * 1024 ** 2)
     throw new Error("Usa Whisper Tiny o Base: il limite scolastico è 200 MB.");
@@ -832,14 +832,14 @@ function installTtsCatalogModel(modelIdOrFilename) {
     TTS_MODEL_CATALOG.find(
       (model) => model.id === raw || model.filename === raw,
     ) || TTS_MODEL_CATALOG[0];
-  if (!catalogModel) throw new Error("Unknown TTS model.");
+  if (!catalogModel) throw new Error("Modello vocale sconosciuto.");
   const manifestPath = getTtsManifestPath(catalogModel.filename);
   const manifest = {
     ...catalogModel,
     installed: true,
     createdAt: new Date().toISOString(),
     notes:
-      "Kokoro model files are cached under app/tts-cache by kokoro-js on first generation.",
+      "Al primo utilizzo i pesi di Kokoro vengono scaricati e conservati nella cartella app/tts-cache.",
   };
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
   return manifest;
@@ -854,6 +854,7 @@ function getTtsModels() {
     return {
       ...model,
       ...(manifest || {}),
+      notes: model.notes,
       installed,
       sizeBytes,
       localSize: installed ? formatBytes(sizeBytes) : "",
@@ -899,11 +900,11 @@ function resolveTtsModel(value) {
     getTtsModels().find((item) => item.installed);
   if (!model)
     throw new Error(
-      "Download or import a Kokoro TTS model from Model Manager first.",
+      "Prepara prima un modello Kokoro dalla pagina Modelli, nella sezione Voce.",
     );
   const manifestPath = getTtsManifestPath(model.filename);
   if (!manifestPath || !fs.existsSync(manifestPath)) {
-    throw new Error(`TTS model is not installed: ${model.filename}`);
+    throw new Error(`Modello vocale non installato: ${model.filename}`);
   }
   return { ...model, path: manifestPath };
 }
@@ -935,7 +936,7 @@ async function startTts(settings = {}) {
   const runtime = getTtsRuntimeStatus();
   if (!runtime.installed) {
     throw new Error(
-      "Kokoro TTS runtime is not installed. Run scripts/setup/setup-tts for this platform.",
+      "Il motore vocale Kokoro non è installato. Riavvia il programma di avvio per completare la preparazione.",
     );
   }
   const model = resolveTtsModel(settings.model || ttsSettings.model);
@@ -1145,18 +1146,18 @@ async function synthesizeTts(text, options = {}) {
   return new Promise((resolve, reject) => {
     const cleanedText = String(text || "").trim();
     if (!cleanedText) {
-      reject(new Error("Enter text to synthesize."));
+      reject(new Error("Scrivi un testo da leggere."));
       return;
     }
     if (cleanedText.length > 5000) {
       reject(
-        new Error("TTS text is too long. Limit is 5000 characters for V1."),
+        new Error("Il testo da leggere è troppo lungo. Il limite è di 5.000 caratteri."),
       );
       return;
     }
     const runtime = getTtsRuntimeStatus();
     if (!runtime.installed) {
-      reject(new Error("Kokoro TTS runtime is not installed."));
+      reject(new Error("Il motore vocale Kokoro non è installato."));
       return;
     }
     const model = resolveTtsModel(options.model || ttsSettings.model);
@@ -1271,7 +1272,7 @@ async function synthesizeTts(text, options = {}) {
         const message = (
           stderr ||
           stdout ||
-          `Kokoro TTS exited with code ${code}`
+          `Il motore vocale Kokoro si è arrestato con codice ${code}`
         )
           .trim()
           .slice(-1400);
@@ -1283,7 +1284,7 @@ async function synthesizeTts(text, options = {}) {
         const workerResult = JSON.parse(stdout.trim() || "{}");
         if (!workerResult.ok || !fs.existsSync(tempWav)) {
           throw new Error(
-            workerResult.error || "Kokoro TTS did not produce a WAV file.",
+            workerResult.error || "Kokoro non ha prodotto un file audio WAV.",
           );
         }
         const saved = saveTtsOutput({
@@ -1330,7 +1331,7 @@ async function startSpeech(settings = {}) {
   const backend = getSpeechBackend(backendPreference);
   if (!backend.cli) {
     throw new Error(
-      `${backend.label || "Selected"} whisper.cpp backend is not installed. Run setup or copy a compatible binary to ${backend.pathHint || "app/speech-backend"}.`,
+      `Il motore Whisper ${backend.label || "selezionato"} non è installato. Esegui la preparazione o chiedi al docente di copiare un eseguibile compatibile in ${backend.pathHint || "app/speech-backend"}.`,
     );
   }
   const model = resolveSpeechModel(settings.model);
@@ -1376,7 +1377,7 @@ function readBinaryBody(req, limitBytes = 1024 * 1024 * 1024) {
       if (bytes > limitBytes) {
         reject(
           new Error(
-            `Audio file is too large. Limit is ${Math.round(limitBytes / (1024 * 1024))} MB.`,
+            `File audio troppo grande. Il limite è ${Math.round(limitBytes / (1024 * 1024))} MB.`,
           ),
         );
         req.destroy();
@@ -1462,7 +1463,7 @@ async function transcribeWavBuffer(buffer, options = {}) {
   return new Promise((resolve, reject) => {
     if (!isWaveBuffer(buffer)) {
       reject(
-        new Error("Speech transcription currently accepts WAV audio only."),
+        new Error("La trascrizione accetta solo audio WAV. Carica il file dalla pagina Trascrivi per convertirlo."),
       );
       return;
     }
@@ -1473,7 +1474,7 @@ async function transcribeWavBuffer(buffer, options = {}) {
     if (!backend.cli) {
       reject(
         new Error(
-          `${backend.label || "Selected"} whisper.cpp CLI backend is not installed.`,
+          `Il motore Whisper ${backend.label || "selezionato"} non è installato.`,
         ),
       );
       return;
@@ -1689,7 +1690,7 @@ async function waitForLlmReady(
 ) {
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     if (!expectedProc || llmProc !== expectedProc)
-      throw new Error(llmError || "llama.cpp exited during startup.");
+      throw new Error(llmError || "Il motore chat llama.cpp si è arrestato durante l’avvio.");
     if (await pingLlmReady(expectedModel)) {
       llmReady = true;
       return;
@@ -1697,7 +1698,7 @@ async function waitForLlmReady(
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(
-    `llama.cpp did not become ready within ${Math.round(maxAttempts / 120)} minutes.`,
+    `Il motore chat llama.cpp non si è avviato entro ${Math.round(maxAttempts / 120)} minuti.`,
   );
 }
 
@@ -1725,7 +1726,7 @@ async function killLlm() {
   llmReady = false;
   llmSettings.supportsVision = false;
   llmSettings.visionMode = "none";
-  llmSettings.visionStatus = "Projector not loaded";
+  llmSettings.visionStatus = "Proiettore non caricato";
   llmSettings.mmproj = null;
   if (!llmProc) {
     await waitForPortAvailable(PORT_LLM, 1500);
@@ -1859,7 +1860,7 @@ function requestJson(url, payload = null, timeoutMs = 120000) {
       },
     );
     req.on("error", reject);
-    req.on("timeout", () => req.destroy(new Error("Request timed out")));
+    req.on("timeout", () => req.destroy(new Error("Tempo di attesa della richiesta scaduto")));
     if (data) req.write(data);
     req.end();
   });
@@ -1950,10 +1951,10 @@ async function startLlm(settings = {}) {
     !pathInside(modelPath, LLM_MODELS) ||
     !fs.existsSync(modelPath)
   ) {
-    throw new Error("Select a downloaded GGUF text model first.");
+    throw new Error("Scegli prima un modello di testo GGUF scaricato.");
   }
   if (!filename.toLowerCase().endsWith(".gguf")) {
-    throw new Error("Text generation requires a .gguf model.");
+    throw new Error("La generazione di testo richiede un modello .gguf.");
   }
 
   const architecture = readGgufArchitecture(modelPath).toLowerCase();
@@ -1966,7 +1967,7 @@ async function startLlm(settings = {}) {
   const candidates = getLlmBackendCandidates();
   if (candidates.length === 0) {
     throw new Error(
-      "llama.cpp is not installed. Run the platform setup script to install the text backend.",
+      "Il motore chat llama.cpp non è installato. Esegui la preparazione per il tuo sistema operativo.",
     );
   }
   const persistedSettings = getLlmModelSettings(filename);
@@ -2027,7 +2028,7 @@ async function startLlm(settings = {}) {
   const last = failures[failures.length - 1];
   llmSettings.backendFallbacks = failures;
   throw new Error(
-    `Text model failed on all available llama.cpp backends. Last failure: ${last?.error || "unknown error"}`,
+    `Impossibile avviare il modello con i motori disponibili. Ultimo errore: ${last?.error || "errore sconosciuto"}`,
   );
 }
 
@@ -2157,7 +2158,7 @@ async function startLlmWithBackend(settings = {}, backend) {
       );
       if (unknownArch) {
         llmError =
-          `${LLAMA_CPP_UNSUPPORTED_ARCHITECTURES[unknownArch[1].toLowerCase()] || `This llama.cpp build does not support the '${unknownArch[1]}' architecture. Re-run setup to update the backend, or pick a different model.`}\n${llmError}`.slice(
+          `${LLAMA_CPP_UNSUPPORTED_ARCHITECTURES[unknownArch[1].toLowerCase()] || `Questa versione di llama.cpp non supporta l’architettura '${unknownArch[1]}'. Ripeti la preparazione per aggiornare il motore o scegli un altro modello.`}\n${llmError}`.slice(
             -1400,
           );
       }
@@ -2171,7 +2172,7 @@ async function startLlmWithBackend(settings = {}, backend) {
     llmReady = false;
     llmProc = null;
     if (code !== 0 && code !== null && !llmError)
-      llmError = `llama.cpp exited with code ${code}`;
+      llmError = `Il motore chat llama.cpp si è arrestato con codice ${code}`;
     console.log("  [llm] exited with code", code, `(process ${procSeq})`);
   });
 
@@ -2207,25 +2208,25 @@ function describeDownloadHttpError(statusCode, url, headers = {}) {
   const hfErrorMessage = headers["x-error-message"];
 
   if (isHuggingFace && hfErrorCode === "GatedRepo") {
-    return `HTTP ${statusCode}: Hugging Face says this model is gated. Open the model page in your browser, accept access/login, then use a Hugging Face token or download the file manually.`;
+    return `HTTP ${statusCode}: questo modello su Hugging Face ha accesso limitato. Scegli un modello gratuito del catalogo oppure chiedi al docente di verificare le condizioni di accesso.`;
   }
   if (isHuggingFace && hfErrorMessage) {
-    return `HTTP ${statusCode}: Hugging Face rejected the download request: ${hfErrorMessage}`;
+    return `HTTP ${statusCode}: Hugging Face ha rifiutato lo scaricamento: ${hfErrorMessage}`;
   }
 
   if (statusCode === 401 || statusCode === 403) {
     return isHuggingFace
-      ? `HTTP ${statusCode}: Hugging Face rejected the download request. If this model is public, retry after restarting the app; otherwise open the model page in your browser and accept any license/login requirement.`
-      : `HTTP ${statusCode}: This download URL requires authorization or permission. Use a public direct download URL.`;
+      ? `HTTP ${statusCode}: Hugging Face ha rifiutato lo scaricamento. Riavvia l’app e riprova; se il problema continua, chiedi al docente di verificare l’accesso al modello.`
+      : `HTTP ${statusCode}: questo indirizzo richiede un’autorizzazione. Usa un collegamento pubblico diretto al file.`;
   }
   if (statusCode === 404) {
-    return `HTTP 404: Model file not found. Check that the URL points directly to a .safetensors, .gguf, or .ckpt file.`;
+    return `HTTP 404: file del modello non trovato. Verifica che l’indirizzo punti direttamente al file del modello.`;
   }
   return `HTTP ${statusCode}`;
 }
 
 const MODEL_FILE_URL_HINT =
-  "Use a direct .gguf or .bin download link from Hugging Face.";
+  "Usa un collegamento diretto a un file .gguf o .bin su Hugging Face.";
 
 // Rejects URLs that point at a web page instead of a downloadable file, e.g. a
 // Hugging Face repository page, which otherwise "downloads" as a small HTML file.
@@ -2303,7 +2304,7 @@ function startModelDownload(
 
   const fileStream = fs.createWriteStream(tempPath);
   fileStream.on("error", (err) => {
-    failDownload(`Could not write ${filename}: ${err.message}`, err);
+    failDownload(`Impossibile scrivere ${filename}: ${err.message}`, err);
   });
 
   const client = url.startsWith("https") ? https : http;
@@ -2325,15 +2326,15 @@ function startModelDownload(
           ? new URL(response.headers.location, url).toString()
           : "";
         if (!redirectUrl) {
-          failDownload("Redirect response did not include a Location header");
+          failDownload("Il server di scaricamento non ha indicato l’indirizzo di destinazione");
           return;
         }
         if (redirectCount > 10) {
-          failDownload("Too many redirects");
+          failDownload("Troppi reindirizzamenti durante lo scaricamento");
           return;
         }
-        console.log(`  [download] Following redirect for ${filename}`);
-        downloadState.speed = "Following redirect";
+        console.log(`  [download] Connessione all’indirizzo di scaricamento for ${filename}`);
+        downloadState.speed = "Connessione all’indirizzo di scaricamento";
 
         // Clean up redirected request to avoid triggering error handlers later
         request.removeAllListeners("error");
@@ -2370,7 +2371,7 @@ function startModelDownload(
       ) {
         response.resume();
         failDownload(
-          `That URL returned a web page, not a model file. ${MODEL_FILE_URL_HINT}`,
+          `L’indirizzo ha restituito una pagina web invece di un file del modello. ${MODEL_FILE_URL_HINT}`,
         );
         return;
       }
@@ -2416,13 +2417,13 @@ function startModelDownload(
 
       response.on("aborted", () => {
         failDownload(
-          `Download interrupted before ${filename} finished. Delete and retry the model download.`,
+          `Scaricamento di ${filename} interrotto. Riprova a scaricare il modello.`,
         );
       });
 
       response.on("error", (err) => {
         failDownload(
-          `Download stream failed before ${filename} finished. Delete and retry the model download.`,
+          `Errore durante lo scaricamento di ${filename}. Riprova a scaricare il modello.`,
           err,
         );
       });
@@ -2431,7 +2432,7 @@ function startModelDownload(
         if (downloadFinalized) return;
         if (totalBytes > 0 && downloadedBytes !== totalBytes) {
           failDownload(
-            `Download incomplete for ${filename}: received ${formatBytes(downloadedBytes)} of ${formatBytes(totalBytes)}. Delete and retry the model download.`,
+            `Scaricamento di ${filename} incompleto: ricevuti ${formatBytes(downloadedBytes)} su ${formatBytes(totalBytes)}. Riprova a scaricare il modello.`,
           );
           return;
         }
@@ -2442,7 +2443,7 @@ function startModelDownload(
               const writtenBytes = fs.statSync(tempPath).size;
               if (writtenBytes !== totalBytes) {
                 failDownload(
-                  `Download incomplete for ${filename}: wrote ${formatBytes(writtenBytes)} of ${formatBytes(totalBytes)}. Delete and retry the model download.`,
+                  `Salvataggio di ${filename} incompleto: scritti ${formatBytes(writtenBytes)} su ${formatBytes(totalBytes)}. Riprova a scaricare il modello.`,
                 );
                 return;
               }
@@ -2470,7 +2471,7 @@ function startModelDownload(
             activeDownload = null;
             console.log(`  [download] Completed download of ${filename}`);
           } catch (err) {
-            failDownload(`Could not finalize ${filename}: ${err.message}`);
+            failDownload(`Impossibile completare il salvataggio di ${filename}: ${err.message}`);
           }
         });
       });
@@ -2500,7 +2501,7 @@ function cancelModelDownload() {
       }, 1000);
     } else {
       try {
-        activeDownload.request.destroy(new Error("Download cancelled by user"));
+        activeDownload.request.destroy(new Error("Scaricamento annullato dall’utente"));
       } catch (_) {}
       try {
         activeDownload.fileStream.destroy();
@@ -2531,7 +2532,7 @@ function cancelModelDownload() {
     eta: 0,
     totalBytes: 0,
     downloadedBytes: 0,
-    error: "Download cancelled",
+    error: "Scaricamento annullato",
     kind: downloadState.kind || "text",
   };
   console.log(`  [download] Cancelled download of ${filename}`);
@@ -2567,7 +2568,7 @@ function readBody(req) {
       if (bytes > MAX_JSON_BODY_BYTES) {
         reject(
           new Error(
-            `Request body is too large. Limit is ${Math.round(MAX_JSON_BODY_BYTES / (1024 * 1024))} MB.`,
+            `Richiesta troppo grande. Il limite è ${Math.round(MAX_JSON_BODY_BYTES / (1024 * 1024))} MB.`,
           ),
         );
         req.destroy();
@@ -2579,7 +2580,7 @@ function readBody(req) {
       try {
         resolve(JSON.parse(data || "{}"));
       } catch (e) {
-        reject(new Error("Invalid JSON request body"));
+        reject(new Error("La richiesta contiene dati JSON non validi"));
       }
     });
     req.on("error", reject);
@@ -2651,10 +2652,10 @@ function sanitizeChatConversationForStorage(conversation = {}) {
 
 function getChatConversationPath(id) {
   const safeId = safeOutputName(id);
-  if (!safeId) throw new Error("A chat id is required.");
+  if (!safeId) throw new Error("Manca l’identificativo della conversazione.");
   const filePath = path.join(CHAT_HISTORY, `${safeId}.json`);
   if (!pathInside(filePath, CHAT_HISTORY)) {
-    throw new Error("Invalid chat id.");
+    throw new Error("Identificativo della conversazione non valido.");
   }
   return filePath;
 }
@@ -2724,12 +2725,12 @@ function streamModelUpload(
       reject(
         new Error(
           mode === "text"
-            ? "Filename must end with .gguf"
+            ? "Il nome del file deve terminare con .gguf"
             : mode === "speech"
-              ? "Filename must end with .bin"
+              ? "Il nome del file deve terminare con .bin"
               : mode === "tts"
-                ? "Filename must end with .json"
-                : "Filename must end with .gguf, .safetensors, or .ckpt",
+                ? "Il nome del file deve terminare con .json"
+                : "Il nome del file deve terminare con .gguf, .safetensors o .ckpt",
         ),
       );
       return;
@@ -2782,7 +2783,7 @@ function streamModelUpload(
     });
     req.on("aborted", () => {
       cleanupPartial();
-      reject(new Error("Import cancelled by user"));
+      reject(new Error("Importazione annullata dall’utente"));
     });
     req.on("close", () => {
       if (!finished && req.aborted) {
@@ -2935,7 +2936,7 @@ const server = http.createServer(async (req, res) => {
     if (!body) return;
     const filename = path.basename(String(body.model || ""));
     if (!filename)
-      return json(res, 400, { ok: false, error: "model is required" });
+      return json(res, 400, { ok: false, error: "Occorre specificare un modello" });
     const updated = updateLlmModelSettings(filename, {
       preferredBackend: body.preferredBackend
         ? String(body.preferredBackend).toLowerCase()
@@ -3083,7 +3084,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true, transcription: result });
     } catch (err) {
       speechError = err.message || String(err);
-      return json(res, err.message?.includes("too large") ? 413 : 500, {
+      return json(res, /too large|troppo grande/i.test(err.message || "") ? 413 : 500, {
         ok: false,
         error: speechError,
       });
@@ -3096,7 +3097,7 @@ const server = http.createServer(async (req, res) => {
     if (downloadState.active)
       return json(res, 409, {
         ok: false,
-        error: "Another model download is already active.",
+        error: "È già in corso lo scaricamento di un altro modello.",
       });
     const modelId = String(body.modelId || body.model_id || body.model || "");
     const catalogModel = SPEECH_MODEL_CATALOG.find(
@@ -3113,13 +3114,13 @@ const server = http.createServer(async (req, res) => {
     if (!url || !filename || !filename.toLowerCase().endsWith(".bin")) {
       return json(res, 400, {
         ok: false,
-        error: "A speech model .bin URL or catalog model id is required.",
+        error: "Occorre un indirizzo per un modello di trascrizione .bin o un identificativo del catalogo.",
       });
     }
     startModelDownload(url, filename, SPEECH_MODELS, "speech");
     return json(res, 200, {
       ok: true,
-      message: "Speech model download started",
+      message: "Scaricamento del modello di trascrizione avviato",
       filename,
     });
   }
@@ -3138,7 +3139,7 @@ const server = http.createServer(async (req, res) => {
       );
       return json(res, 200, {
         ok: true,
-        message: `Imported ${result.filename}`,
+        message: `Importato ${result.filename}`,
         model: result,
       });
     } catch (err) {
@@ -3153,7 +3154,7 @@ const server = http.createServer(async (req, res) => {
     const filename = path.basename(String(body.filename || ""));
     const modelPath = path.join(SPEECH_MODELS, filename);
     if (!filename || !pathInside(modelPath, SPEECH_MODELS)) {
-      return json(res, 400, { ok: false, error: "Invalid filename" });
+      return json(res, 400, { ok: false, error: "Nome del file non valido" });
     }
     if (speechSettings.model === filename) await stopSpeech();
     try {
@@ -3162,7 +3163,7 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       return json(res, err.code === "ENOENT" ? 404 : 500, {
         ok: false,
-        error: err.code === "ENOENT" ? "Speech model not found" : err.message,
+        error: err.code === "ENOENT" ? "Modello di trascrizione non trovato" : err.message,
       });
     }
   }
@@ -3176,17 +3177,17 @@ const server = http.createServer(async (req, res) => {
     if (!body) return;
     const filename = path.basename(String(body.filename || ""));
     if (!filename || !filename.endsWith(".json")) {
-      return json(res, 400, { ok: false, error: "Invalid filename" });
+      return json(res, 400, { ok: false, error: "Nome del file non valido" });
     }
     const jsonPath = path.join(TRANSCRIPTIONS, filename);
     if (!pathInside(jsonPath, TRANSCRIPTIONS)) {
-      return json(res, 400, { ok: false, error: "Invalid path" });
+      return json(res, 400, { ok: false, error: "Percorso non valido" });
     }
     try {
       if (!fs.existsSync(jsonPath)) {
         return json(res, 404, {
           ok: false,
-          error: "Transcription metadata not found",
+          error: "Dati della trascrizione non trovati",
         });
       }
 
@@ -3297,7 +3298,7 @@ const server = http.createServer(async (req, res) => {
       );
       return json(res, 200, {
         ok: true,
-        message: "TTS model manifest installed",
+        message: "Configurazione del modello vocale installata",
         filename: model.filename,
         model,
       });
@@ -3320,7 +3321,7 @@ const server = http.createServer(async (req, res) => {
       );
       return json(res, 200, {
         ok: true,
-        message: `Imported ${result.filename}`,
+        message: `Importato ${result.filename}`,
         model: result,
       });
     } catch (err) {
@@ -3339,7 +3340,7 @@ const server = http.createServer(async (req, res) => {
       !filename.endsWith(".json") ||
       !pathInside(modelPath, TTS_MODELS)
     ) {
-      return json(res, 400, { ok: false, error: "Invalid filename" });
+      return json(res, 400, { ok: false, error: "Nome del file non valido" });
     }
     if (ttsSettings.model === filename) await stopTts();
     try {
@@ -3348,7 +3349,7 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       return json(res, err.code === "ENOENT" ? 404 : 500, {
         ok: false,
-        error: err.code === "ENOENT" ? "TTS model not found" : err.message,
+        error: err.code === "ENOENT" ? "Modello vocale non trovato" : err.message,
       });
     }
   }
@@ -3362,17 +3363,17 @@ const server = http.createServer(async (req, res) => {
     if (!body) return;
     const filename = path.basename(String(body.filename || ""));
     if (!filename || !filename.endsWith(".json")) {
-      return json(res, 400, { ok: false, error: "Invalid filename" });
+      return json(res, 400, { ok: false, error: "Nome del file non valido" });
     }
     const jsonPath = path.join(TTS_OUTPUTS, filename);
     if (!pathInside(jsonPath, TTS_OUTPUTS)) {
-      return json(res, 400, { ok: false, error: "Invalid path" });
+      return json(res, 400, { ok: false, error: "Percorso non valido" });
     }
     try {
       if (!fs.existsSync(jsonPath)) {
         return json(res, 404, {
           ok: false,
-          error: "TTS output metadata not found",
+          error: "Dati dell’audio vocale non trovati",
         });
       }
       const metadata = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
@@ -3414,7 +3415,7 @@ const server = http.createServer(async (req, res) => {
     ];
     const nextLimit = contextLadder.find((limit) => limit < currentCtx);
     if (!nextLimit) {
-      throw new Error("Cannot lower context size any further.");
+      throw new Error("Non è possibile ridurre ulteriormente il contesto.");
     }
     console.log(
       `  [llm] Retrying with lower context limit: ${nextLimit} (was ${currentCtx})`,
@@ -3602,7 +3603,7 @@ const server = http.createServer(async (req, res) => {
     if (!llmReady)
       return json(res, 409, {
         ok: false,
-        error: "Load a text model before sending a message.",
+        error: "Carica un modello di testo prima di inviare un messaggio.",
       });
     await runExclusiveLlmOperation(async () => {
       if (res.destroyed) return;
@@ -3648,11 +3649,11 @@ const server = http.createServer(async (req, res) => {
     const body = await readJsonBody(req, res);
     if (!body) return;
     const url = String(body.url || "");
-    if (!url) return json(res, 400, { ok: false, error: "URL is required" });
+    if (!url) return json(res, 400, { ok: false, error: "Occorre specificare un indirizzo" });
     if (downloadState.active)
       return json(res, 409, {
         ok: false,
-        error: "Another model download is already active.",
+        error: "È già in corso lo scaricamento di un altro modello.",
       });
     try {
       const directUrl = url.includes("huggingface.co")
@@ -3666,13 +3667,13 @@ const server = http.createServer(async (req, res) => {
       if (!filename.toLowerCase().endsWith(".gguf")) {
         return json(res, 400, {
           ok: false,
-          error: "Text model URL must point to a .gguf file.",
+          error: "L’indirizzo del modello di testo deve indicare un file .gguf.",
         });
       }
       startModelDownload(directUrl, filename, LLM_MODELS, "text");
       return json(res, 200, {
         ok: true,
-        message: "Text model download started",
+        message: "Scaricamento del modello di testo avviato",
         filename,
       });
     } catch (err) {
@@ -3709,7 +3710,7 @@ const server = http.createServer(async (req, res) => {
       !pathInside(filePath, TTS_OUTPUTS) ||
       !fs.existsSync(filePath)
     ) {
-      return json(res, 404, { ok: false, error: "TTS output not found" });
+      return json(res, 404, { ok: false, error: "Audio vocale non trovato" });
     }
     const ext = path.extname(filePath).toLowerCase();
     if (ext === ".wav") ensureBrowserCompatibleTtsWav(filePath);
@@ -3794,7 +3795,7 @@ const server = http.createServer(async (req, res) => {
       );
       return json(res, 200, {
         ok: true,
-        message: `Imported ${result.filename}`,
+        message: `Importato ${result.filename}`,
         model: result,
       });
     } catch (err) {
@@ -3809,7 +3810,7 @@ const server = http.createServer(async (req, res) => {
     const filename = path.basename(String(body.filename || ""));
     const modelPath = path.join(LLM_MODELS, filename);
     if (!filename || !pathInside(modelPath, LLM_MODELS)) {
-      return json(res, 400, { ok: false, error: "Invalid filename" });
+      return json(res, 400, { ok: false, error: "Nome del file non valido" });
     }
     if (llmSettings.model === filename && llmProc) await killLlm();
     try {
@@ -3818,7 +3819,7 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       return json(res, err.code === "ENOENT" ? 404 : 500, {
         ok: false,
-        error: err.code === "ENOENT" ? "Text model not found" : err.message,
+        error: err.code === "ENOENT" ? "Modello di testo non trovato" : err.message,
       });
     }
   }
@@ -3845,7 +3846,7 @@ const server = http.createServer(async (req, res) => {
   let filePath = path.join(DIST, req.url === "/" ? "index.html" : req.url);
   filePath = filePath.split("?")[0];
   if (!pathInside(filePath, DIST))
-    return json(res, 403, { ok: false, error: "Invalid path" });
+    return json(res, 403, { ok: false, error: "Percorso non valido" });
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(DIST, "index.html");
   }

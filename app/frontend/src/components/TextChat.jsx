@@ -1,3 +1,4 @@
+import { describeUiError } from "../utils/uiError";
 import React, {
   useCallback,
   useEffect,
@@ -136,7 +137,7 @@ function ChatThinkingSection({ reasoning, timeElapsed, isComplete }) {
       >
         <span className="chat-thinking-title">
           {isComplete
-            ? `Thought process${formattedTime}`
+            ? `Ragionamento${formattedTime}`
             : `Thinking...${formattedTime}`}
         </span>
         <ChevronDown
@@ -271,7 +272,7 @@ function TextChat({
     : textSettings?.enableThinking === true;
   const visionStatus =
     status.settings?.visionStatus ||
-    "Image input requires a matching mmproj projector file.";
+    "Per usare immagini serve un file proiettore mmproj compatibile.";
 
   const resizeComposerInput = useCallback(() => {
     const textarea = textareaRef.current;
@@ -339,7 +340,7 @@ function TextChat({
           .then((text) => {
             if (!text.trim()) {
               throw new Error(
-                `"${file.name}" has no extractable text (it may be a scanned image). Usa un PDF con testo selezionabile oppure incolla un estratto.`,
+                `"${file.name}" non contiene testo estraibile; potrebbe essere una scansione. Usa un PDF con testo selezionabile oppure incolla un estratto.`,
               );
             }
             setAttachments((prev) => [
@@ -355,15 +356,15 @@ function TextChat({
           })
           .catch((err) => {
             showAlert({
-              title: "PDF Error",
-              message: err.message || String(err),
+              title: "Errore nel PDF",
+              message: describeUiError(err),
               danger: true,
             });
           });
       } else {
         showAlert({
-          title: "Unsupported File",
-          message: `File "${file.name}" is not supported. Seleziona un PDF con testo oppure un file di testo o codice.`,
+          title: "File non supportato",
+          message: `File "${file.name}" non è supportato. Seleziona un PDF con testo oppure un file di testo o codice.`,
           danger: true,
         });
       }
@@ -404,11 +405,11 @@ function TextChat({
     }
 
     const reload = await showConfirm({
-      title: enabled ? "Reload With DeepThink?" : "Reload Without DeepThink?",
+      title: enabled ? "Ricaricare con il ragionamento esteso?" : "Ricaricare senza il ragionamento esteso?",
       message:
-        "Changing DeepThink requires reloading the text model before it affects new replies. Reload now, or skip and keep the currently loaded model as-is?",
-      confirmLabel: "Reload",
-      cancelLabel: "Skip",
+        "Per applicare la modifica alle nuove risposte occorre ricaricare il modello. Vuoi ricaricarlo ora?",
+      confirmLabel: "Ricarica",
+      cancelLabel: "Non ora",
     });
     if (!reload) return;
 
@@ -429,8 +430,8 @@ function TextChat({
       });
     } catch (err) {
       showAlert({
-        title: "Text Model Reload Failed",
-        message: err.message || String(err),
+        title: "Ricaricamento del modello non riuscito",
+        message: describeUiError(err),
         danger: true,
       });
     } finally {
@@ -595,8 +596,8 @@ function TextChat({
           });
         } catch (err) {
           showAlert({
-            title: "Unload Failed",
-            message: err.message || String(err),
+            title: "Rimozione dalla memoria non riuscita",
+            message: describeUiError(err),
             danger: true,
           });
         } finally {
@@ -644,7 +645,7 @@ function TextChat({
     } catch (err) {
       if (loadingModelRef.current === filename) {
         showAlert({
-          title: "Text Model Load Failed",
+          title: "Caricamento del modello non riuscito",
           message: err.message,
           danger: true,
         });
@@ -686,7 +687,7 @@ function TextChat({
     attachments
       .filter((att) => att.type === "document")
       .forEach((att) => {
-        documentContext += `\n[Attached File: ${att.name}]\n${att.content}\n`;
+        documentContext += `\n[File allegato: ${att.name}]\n${att.content}\n`;
       });
 
     const requestHasImage = false;
@@ -739,7 +740,7 @@ function TextChat({
 
     try {
       const systemPrompt =
-        textSettings?.systemPrompt || "You are a helpful local AI assistant.";
+        textSettings?.systemPrompt || "Sei un assistente locale per un laboratorio scolastico. Rispondi in italiano in modo breve e chiaro.";
       const combinedSystemPrompt = [systemPrompt.trim(), visionInstruction]
         .filter(Boolean)
         .join("\n\n");
@@ -968,7 +969,7 @@ function TextChat({
       } else {
         const finalMessages = [
           ...nextMessages,
-          { role: "assistant", content: `Error: ${err.message}`, error: true },
+          { role: "assistant", content: `Errore: ${err.message}`, error: true },
         ];
         setMessages(finalMessages);
         saveConversationState(convId, finalMessages, selectedModel);
@@ -1003,23 +1004,23 @@ function TextChat({
     Math.round((contextUsed / contextMax) * 100),
   );
   const composerPlaceholder = status.ready
-    ? "Ask anything"
-    : "Select a model to start chatting";
+    ? "Scrivi una domanda"
+    : "Scegli un modello per iniziare la conversazione";
 
   const homeSuggestions = [
     ...(status.ready
       ? [
           {
             Icon: PenLine,
-            label: "Write a professional email to reschedule a meeting",
+            label: "Scrivi una breve email per spostare una riunione",
             onClick: () =>
-              setInput("Write a professional email to reschedule a meeting"),
+              setInput("Scrivi una breve email per spostare una riunione"),
           },
           {
             Icon: Lightbulb,
-            label: "Explain how transformers work in simple terms",
+            label: "Spiega in modo semplice come funzionano i modelli Transformer",
             onClick: () =>
-              setInput("Explain how transformers work in simple terms"),
+              setInput("Spiega in modo semplice come funzionano i modelli Transformer"),
           },
         ]
       : []),
@@ -1065,7 +1066,7 @@ function TextChat({
                     prev.filter((item) => item.id !== att.id),
                   )
                 }
-                aria-label={`Remove ${att.name}`}
+                aria-label={`Rimuovi ${att.name}`}
               >
                 <X size={14} />
               </button>
@@ -1087,7 +1088,7 @@ function TextChat({
             }
           }}
           placeholder={composerPlaceholder}
-          aria-label="Message"
+          aria-label="Messaggio"
           disabled={!status.ready || isBusy}
           rows={1}
         />
@@ -1107,11 +1108,11 @@ function TextChat({
               className="chat-composer-icon-btn"
               onClick={() => fileInputRef.current?.click()}
               disabled={!status.ready || isBusy}
-              aria-label="Attach files"
+              aria-label="Allega file"
               title={
                 status.ready
                   ? "Allega documenti di testo, codice o PDF"
-                  : "Load a model to attach files"
+                  : "Carica un modello per allegare file"
               }
             >
               <Plus size={20} />
@@ -1124,12 +1125,12 @@ function TextChat({
                 aria-pressed={deepThinkEnabled}
                 title={
                   deepThinkEnabled
-                    ? "Disable DeepThink reasoning"
-                    : "Enable DeepThink reasoning"
+                    ? "Disattiva il ragionamento esteso"
+                    : "Attiva il ragionamento esteso"
                 }
               >
                 <Brain size={15} />
-                <span>Think</span>
+                <span>Ragiona</span>
               </button>
             )}
           </div>
@@ -1146,7 +1147,7 @@ function TextChat({
                 title={
                   status.ready
                     ? status.settings?.model
-                    : "Choose a text model to load"
+                    : "Scegli un modello di testo da caricare"
                 }
               >
                 {status.ready && (
@@ -1194,7 +1195,7 @@ function TextChat({
                           {m.filename.replace(/\.gguf$/i, "")}
                         </span>
                         {isActive && (
-                          <span className="chat-model-menu-badge">Loaded</span>
+                          <span className="chat-model-menu-badge">Caricato</span>
                         )}
                       </button>
                     );
@@ -1211,7 +1212,7 @@ function TextChat({
                           setShowModelMenu(false);
                         }}
                       >
-                        Unload model
+                        Libera il modello dalla memoria
                       </button>
                     </>
                   )}
@@ -1224,8 +1225,8 @@ function TextChat({
                 type="button"
                 className="chat-composer-stop-btn"
                 onClick={handleStopGeneration}
-                aria-label="Stop generating"
-                title="Stop generating"
+                aria-label="Interrompi la generazione"
+                title="Interrompi la generazione"
               >
                 <Square size={14} fill="currentColor" />
               </button>
@@ -1237,8 +1238,8 @@ function TextChat({
                 disabled={
                   (!input.trim() && attachments.length === 0) || !status.ready
                 }
-                aria-label="Send message"
-                title="Send message"
+                aria-label="Invia messaggio"
+                title="Invia messaggio"
               >
                 <ArrowUp size={18} strokeWidth={2.25} />
               </button>
@@ -1260,13 +1261,13 @@ function TextChat({
                 size={28}
                 aria-hidden="true"
               />
-              <h1 className="chat-home-title">Loading model</h1>
+              <h1 className="chat-home-title">Caricamento del modello</h1>
               <p className="chat-loading-name">
                 {loadingModel.replace(/\.gguf$/i, "")}
               </p>
               <p className="chat-loading-note">
-                Starting llama.cpp and loading the weights into memory. This can
-                take up to 30 seconds depending on model size and hardware.
+                Avvio del motore chat e caricamento del modello nella memoria del PC.
+                Attendi: il tempo dipende dal modello e dal computer.
               </p>
               <button
                 type="button"
@@ -1274,7 +1275,7 @@ function TextChat({
                 onClick={handleCancelLlmLoad}
               >
                 <Square size={13} fill="currentColor" aria-hidden="true" />
-                <span>Cancel</span>
+                <span>Annulla</span>
               </button>
             </div>
           </div>
@@ -1305,16 +1306,16 @@ function TextChat({
                   type="button"
                   className="chat-thread-btn chat-thread-sidebar-btn"
                   onClick={onToggleSidebar}
-                  aria-label="Open sidebar"
-                  title="Open sidebar"
+                  aria-label="Apri la barra laterale"
+                  title="Apri la barra laterale"
                 >
                   <PanelLeft size={18} />
                 </button>
               )}
               <div
                 className="chat-context"
-                title={`Context used: ${contextUsed} / ${contextMax} tokens`}
-                aria-label={`Context used: ${contextPercent}%`}
+                title={`Contesto utilizzato: ${contextUsed} / ${contextMax} token`}
+                aria-label={`Contesto utilizzato: ${contextPercent}%`}
               >
                 <svg
                   width="18"
@@ -1351,8 +1352,8 @@ function TextChat({
                 type="button"
                 className="chat-thread-btn"
                 onClick={handleClearChat}
-                aria-label="Clear this chat"
-                title="Clear this chat"
+                aria-label="Svuota questa conversazione"
+                title="Svuota questa conversazione"
               >
                 <Trash2 size={16} />
               </button>
@@ -1384,8 +1385,8 @@ function TextChat({
                     >
                       <span className="sr-only">
                         {message.role === "user"
-                          ? "You said:"
-                          : "Assistant said:"}
+                          ? "Tu:"
+                          : "Assistente:"}
                       </span>
                       <div className="chat-bubble-wrap">
                         {message.role === "assistant" && displayReasoning && (
@@ -1423,7 +1424,7 @@ function TextChat({
                                       <img
                                         key={idx}
                                         src={item.image_url.url}
-                                        alt="Attached image"
+                                        alt="Immagine allegata"
                                         style={{
                                           maxWidth: "240px",
                                           maxHeight: "180px",
@@ -1447,7 +1448,7 @@ function TextChat({
                             <div className="chat-sources">
                               <div className="chat-sources-title">
                                 <Globe2 size={13} aria-hidden="true" />
-                                <span>Sources</span>
+                                <span>Fonti</span>
                               </div>
                               {message.webSources.map((source, sourceIndex) => (
                                 <a
@@ -1469,9 +1470,8 @@ function TextChat({
                             <>
                               {message.generationStats.truncated && (
                                 <div className="chat-generation-warning">
-                                  Response reached the token limit. Ask
-                                  "continue" or switch Max Response Tokens to
-                                  Manual for a larger cap.
+                                  La risposta ha raggiunto il limite di lunghezza. Chiedi di
+                                  continuare oppure aumenta il limite nelle Impostazioni.
                                 </div>
                               )}
                               <div
@@ -1485,10 +1485,10 @@ function TextChat({
                                       className="progress-spinner"
                                     />{" "}
                                     {message.generationStats.web
-                                      ? "Searching the web…"
+                                      ? "Ricerca sul web…"
                                       : message.generationStats.vision
-                                        ? "Reading the image…"
-                                        : "Thinking…"}
+                                        ? "Analisi dell’immagine…"
+                                        : "Elaborazione…"}
                                   </>
                                 ) : message.generationStats.status ===
                                   "streaming" ? (
@@ -1501,7 +1501,7 @@ function TextChat({
                                   </>
                                 ) : (
                                   <>
-                                    {message.generationStats.tokens} tokens ·{" "}
+                                    {message.generationStats.tokens} token ·{" "}
                                     {formatGenerationTime(
                                       message.generationStats.seconds,
                                     )}
@@ -1540,7 +1540,7 @@ async function extractPdfText(file) {
       .map((item) => (item.str || "") + (item.hasEOL ? "\n" : " "))
       .join("")
       .trim();
-    if (text) pages.push(`[Page ${pageNumber}]\n${text}`);
+    if (text) pages.push(`[Pagina ${pageNumber}]\n${text}`);
   }
   await pdf.destroy();
   return pages.join("\n\n");
