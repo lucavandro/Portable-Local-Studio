@@ -31,6 +31,8 @@ Su Windows 10/11 a 64 bit avvia `windows.bat`. Su Linux avvia `./linux.sh`, su m
 
 L’interfaccia si apre su `http://localhost:1420`; l’avvio sceglie un’altra porta se occupata. Ogni PC conserva i propri dati. Non è un server multiutente per la classe e non richiede un account degli studenti.
 
+Se una vecchia preparazione mostra «Get-IntelOpenVinoNpu non riconosciuto» dopo Kokoro, aggiorna la cartella del progetto e riavvia `windows.bat`. Era un controllo hardware rimasto dalla versione con OpenVINO, ora rimosso: non occorre installare OpenVINO, driver NPU o cancellare i modelli già scaricati. Il messaggio non indica un errore delle voci italiane.
+
 ## Profilo per 8 GB di RAM
 
 - Solo esecuzione su CPU, fino a 4 thread, contesto fino a 2.048 token e risposte fino a 512 token (384 iniziali).
