@@ -5,7 +5,13 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
-LLM_ROOT="$ROOT_DIR/app/llm-backend"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  CPU_ARCH="$(uname -m)"
+  if [[ "$(sysctl -in hw.optional.arm64 2>/dev/null || true)" == "1" ]]; then CPU_ARCH="arm64"; fi
+  LLM_ROOT="$ROOT_DIR/app/llm-backend/mac/$CPU_ARCH"
+else
+  LLM_ROOT="$ROOT_DIR/app/llm-backend/linux/cpu"
+fi
 
 REQUIRED="${LLAMA_RELEASE:-$(sed -n 's/^RELEASE="\${LLAMA_RELEASE:-\([^}]*\)}"$/\1/p' "$SCRIPT_DIR/setup-llama.sh" | head -n 1)}"
 [[ -n "$REQUIRED" && -d "$LLM_ROOT" ]] || exit 0
@@ -18,7 +24,7 @@ while IFS= read -r server; do
     STALE="$dir (${installed:-unknown})"
     break
   fi
-done < <(find "$LLM_ROOT" -mindepth 3 -maxdepth 3 -name llama-server -type f 2>/dev/null)
+done < <(find "$LLM_ROOT" -mindepth 1 -maxdepth 1 -name llama-server -type f 2>/dev/null)
 
 [[ -n "$STALE" ]] || exit 0
 

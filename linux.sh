@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 #
-# Uncensored AI Studio - Linux Launcher
+# Local Studio Scuola - Linux Launcher
 # Double-click or run: ./linux.sh
-# Use --max-perf to enable ROCm backend downloads on Linux first setup.
 #
 
 set -euo pipefail
@@ -18,8 +17,6 @@ fi
 
 NODE_DIR="$APP_DIR/tools/node-linux"
 NODE_BIN="$NODE_DIR/bin/node"
-BACKEND_PATH="$APP_DIR/backend/linux/vulkan/sd-vulkan"
-CPU_BACKEND_PATH="$APP_DIR/backend/linux/cpu/sd-cpu"
 PLATFORM_LABEL="Linux"
 
 DIST_INDEX="$APP_DIR/dist/index.html"
@@ -30,8 +27,6 @@ FRONTEND_PORT="${FRONTEND_PORT:-1420}"
 LLM_PORT="${LLM_PORT:-10086}"
 SETUP_REASON=""
 SETUP_MODE="Repair"
-MAX_PERF_FLAG=""
-SETUP_OPENVINO=0
 
 is_port_in_use() {
   local port="$1"
@@ -68,27 +63,6 @@ resolve_frontend_port() {
   echo "[ERROR] No free frontend port found. Tried $preferred and 1421-1499." >&2
   return 1
 }
-
-# Parse args
-for arg in "$@"; do
-  case "$arg" in
-    --max-perf)
-      MAX_PERF_FLAG="--max-perf"
-      ;;
-    --setup-openvino)
-      SETUP_OPENVINO=1
-      ;;
-    *)
-      echo "[ERROR] Unknown option: $arg" >&2
-      echo "Usage: ./linux.sh [--max-perf] [--setup-openvino]" >&2
-      exit 1
-      ;;
-  esac
-done
-
-if [[ $SETUP_OPENVINO -eq 1 ]]; then
-  bash "$SCRIPT_DIR/scripts/setup/setup-openvino-npu.sh"
-fi
 
 # ── Setup node_modules to avoid OS conflicts ────────────────────────────────
 FRONTEND_NODE_MODULES="$APP_DIR/frontend/node_modules"
@@ -162,20 +136,10 @@ if [[ ! -f "$DIST_INDEX" ]]; then
   SETUP_REASON="Frontend build is missing."
 fi
 
-# At minimum we need CPU or Vulkan backend on Linux, and both CLI and server binaries must be executable
-CPU_SERVER_PATH="$APP_DIR/backend/linux/cpu/sd-server-cpu"
-VULKAN_SERVER_PATH="$APP_DIR/backend/linux/vulkan/sd-server-vulkan"
-LLM_CUDA_PATH="$APP_DIR/llm-backend/linux/cuda/llama-server"
-LLM_ROCM_PATH="$APP_DIR/llm-backend/linux/rocm/llama-server"
-LLM_SYCL_PATH="$APP_DIR/llm-backend/linux/sycl/llama-server"
-LLM_VULKAN_PATH="$APP_DIR/llm-backend/linux/vulkan/llama-server"
 LLM_CPU_PATH="$APP_DIR/llm-backend/linux/cpu/llama-server"
 SPEECH_BACKEND_PATH="$APP_DIR/speech-backend/linux/cpu/whisper-cli"
 TTS_RUNTIME_PATH="$APP_DIR/tts-runtime/node_modules/kokoro-js"
-if [[ ! -x "$CPU_BACKEND_PATH" || ! -x "$CPU_SERVER_PATH" ]] && [[ ! -x "$BACKEND_PATH" || ! -x "$VULKAN_SERVER_PATH" ]]; then
-  SETUP_REASON="Linux backend binaries are missing or not executable."
-fi
-if [[ ! -x "$LLM_CUDA_PATH" && ! -x "$LLM_ROCM_PATH" && ! -x "$LLM_SYCL_PATH" && ! -x "$LLM_VULKAN_PATH" && ! -x "$LLM_CPU_PATH" ]]; then
+if [[ ! -x "$LLM_CPU_PATH" ]]; then
   SETUP_REASON="Linux llama.cpp text backend is missing or not executable."
 fi
 if [[ ! -x "$SPEECH_BACKEND_PATH" ]]; then
@@ -188,13 +152,13 @@ fi
 if [[ -n "$SETUP_REASON" ]]; then
   echo ""
   echo "  ============================================================"
-  echo "   UNCENSORED AI STUDIO      |  $PLATFORM_LABEL $SETUP_MODE"
+  echo "   LOCAL STUDIO SCUOLA      |  $PLATFORM_LABEL $SETUP_MODE"
   echo "  ============================================================"
   echo ""
   if [[ "$SETUP_MODE" == "First-Time Setup" ]]; then
     echo "  This looks like your first run on Linux. Setting up automatically..."
   else
-    echo "  Uncensored AI Studio needs a quick repair before launch."
+    echo "  Local Studio Scuola needs a quick repair before launch."
   fi
   echo "  Reason: $SETUP_REASON"
   echo "  Models are not downloaded during setup. Download or import them in the app."
@@ -203,14 +167,8 @@ if [[ -n "$SETUP_REASON" ]]; then
 
   # Clear managed backend ports before setup. Do not kill the frontend port;
   # launch will select a free frontend port automatically.
-  if command -v lsof >/dev/null 2>&1; then
-    lsof -t -i:8080 -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
-  elif command -v fuser >/dev/null 2>&1; then
-    fuser -k "8080/tcp" >/dev/null 2>&1 || true
-    fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
-  fi
 
-  if ! bash "$SETUP_SCRIPT" $MAX_PERF_FLAG; then
+  if ! bash "$SETUP_SCRIPT"; then
     echo ""
     echo "  [ERROR] Setup failed. Please check the output above."
     read -rp "  Press Enter to close..."
@@ -227,7 +185,7 @@ bash "$SCRIPT_DIR/scripts/setup/update-llama.sh"
 clear 2>/dev/null || true
 echo ""
 echo "  ============================================================"
-echo "   UNCENSORED AI STUDIO      |  Launching..."
+echo "   LOCAL STUDIO SCUOLA      |  Launching..."
 echo "  ============================================================"
 echo ""
 
@@ -238,15 +196,9 @@ if [[ "$FRONTEND_PORT" != "$REQUESTED_FRONTEND_PORT" ]]; then
 fi
 
 # Clear managed backend ports
-if command -v lsof >/dev/null 2>&1; then
-  lsof -t -i:8080 -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
-elif command -v fuser >/dev/null 2>&1; then
-  fuser -k "8080/tcp" >/dev/null 2>&1 || true
-  fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
-fi
 
 # Start the server
-echo "  Starting Uncensored AI Studio..."
+echo "  Starting Local Studio Scuola..."
 export PATH="$NODE_DIR/bin:$PATH"
 export FRONTEND_PORT="$FRONTEND_PORT"
 
@@ -269,7 +221,6 @@ echo ""
 echo "  ============================================================"
 echo "   Running!"
 echo "   Web UI:     http://localhost:${FRONTEND_PORT}"
-echo "   GPU API:    Auto-selected by the app (starts at 8080)"
 echo "   Text API:   Starts when a GGUF model is loaded (port ${LLM_PORT})"
 echo "   Speech:     Managed locally by the app"
 echo "   TTS:        Managed locally by the app"

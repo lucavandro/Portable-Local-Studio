@@ -1,0 +1,72 @@
+.school-page {
+  padding: clamp(20px, 4vw, 48px);
+  overflow-y: auto;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.school-page h1 {
+  font-size: 1.8rem;
+  margin: 0 0 12px;
+}
+.school-page h2 {
+  font-size: 1.15rem;
+  margin: 24px 0 12px;
+}
+.school-page p {
+  line-height: 1.6;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.school-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+.school-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 16px;
+}
+.school-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: var(--md-sys-color-surface-container-low);
+  overflow-wrap: anywhere;
+}
+.school-card h2,
+.school-card p {
+  margin: 0;
+}
+.school-card button {
+  align-self: flex-start;
+}
+.school-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.school-card select,
+.school-card textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  padding: 10px;
+}
+.school-card progress {
+  width: 100%;
+}
+.school-error {
+  color: var(--md-sys-color-error) !important;
+}
+.school-import {
+  margin: 24px 0;
+}

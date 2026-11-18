@@ -568,13 +568,13 @@ export default function TextToSpeech({
 
   const isLoaded = status.ready && status.settings?.model === selectedModel;
   const selectedModelInfo = installedModels.find((model) => model.filename === selectedModel || model.id === selectedModel);
-  const modelLabel = selectedModelInfo?.name || selectedModel || (installedModels.length ? "Choose a model" : "No voice model");
+  const modelLabel = selectedModelInfo?.name || selectedModel || (installedModels.length ? "Choose a model" : "Nessun modello voce");
   const runtimeLabel = status.runtimeInstalled ? (status.ready ? "Ready" : "Installed") : "Runtime missing";
   const charCount = text.trim().length;
   const canGenerate = Boolean(text.trim()) && Boolean(selectedModel) && status.runtimeInstalled;
 
   let notice = "";
-  if (installedModels.length === 0) notice = "Download a Kokoro model in Models, under TTS models, to start.";
+  if (installedModels.length === 0) notice = "Scarica Kokoro Q8 in Modelli → Voce per iniziare.";
   else if (!status.runtimeInstalled) notice = "The voice runtime isn't installed. Run the TTS setup script for this platform.";
 
   useEffect(() => {
@@ -796,7 +796,7 @@ export default function TextToSpeech({
                 title={!selectedModel ? "Choose a voice model first" : !text.trim() ? "Type something to speak" : "Speak (Enter)"}
               >
                 <Volume2 size={16} aria-hidden="true" />
-                <span>Speak</span>
+                <span>Leggi</span>
               </button>
             )}
           </div>
@@ -1200,8 +1200,8 @@ export default function TextToSpeech({
 
           {clips.length === 0 && !isGenerating ? (
             <div className="empty-state voice-empty">
-              <div className="empty-state-title">Turn text into speech</div>
-              <p>Type below, pick a voice and speed, then press Enter.</p>
+              <div className="empty-state-title">Leggi un testo ad alta voce</div>
+              <p>Scrivi un testo in inglese, scegli voce e velocità, poi premi Invio.</p>
             </div>
           ) : (
             <ul className="row-list voice-clip-list">

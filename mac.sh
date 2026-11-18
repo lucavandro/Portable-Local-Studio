@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Uncensored AI Studio - macOS Launcher
+# Local Studio Scuola - macOS Launcher
 # Double-click or run: ./mac.sh
 #
 
@@ -22,7 +22,6 @@ fi
 
 NODE_DIR="$APP_DIR/tools/node-mac"
 NODE_BIN="$NODE_DIR/bin/node"
-BACKEND_PATH="$APP_DIR/backend/mac/sd"
 if [[ "$ARCH" == "arm64" ]]; then
   LLM_BACKEND_PATH="$APP_DIR/llm-backend/mac/arm64/llama-server"
 else
@@ -155,9 +154,6 @@ if [[ ! -f "$DIST_INDEX" ]]; then
   SETUP_REASON="Frontend build is missing."
 fi
 
-if [[ ! -x "$BACKEND_PATH" ]]; then
-  SETUP_REASON="No macOS Metal backend binary is installed."
-fi
 if [[ ! -x "$LLM_BACKEND_PATH" ]]; then
   SETUP_REASON="No macOS llama.cpp text backend is installed."
 fi
@@ -171,13 +167,13 @@ fi
 if [[ -n "$SETUP_REASON" ]]; then
   echo ""
   echo "  ============================================================"
-  echo "   UNCENSORED AI STUDIO      |  $PLATFORM_LABEL $SETUP_MODE"
+  echo "   LOCAL STUDIO SCUOLA      |  $PLATFORM_LABEL $SETUP_MODE"
   echo "  ============================================================"
   echo ""
   if [[ "$SETUP_MODE" == "First-Time Setup" ]]; then
     echo "  This looks like your first run on macOS. Setting up automatically..."
   else
-    echo "  Uncensored AI Studio needs a quick repair before launch."
+    echo "  Local Studio Scuola needs a quick repair before launch."
   fi
   echo "  Reason: $SETUP_REASON"
   echo "  Models are not downloaded during setup. Download or import them in the app."
@@ -186,12 +182,6 @@ if [[ -n "$SETUP_REASON" ]]; then
 
   # Clear managed backend ports before setup. Do not kill the frontend port;
   # launch will select a free frontend port automatically.
-  if command -v lsof >/dev/null 2>&1; then
-    lsof -t -i:8080 -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
-  elif command -v fuser >/dev/null 2>&1; then
-    fuser -k "8080/tcp" >/dev/null 2>&1 || true
-    fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
-  fi
 
   if ! bash "$SETUP_SCRIPT"; then
     echo ""
@@ -210,7 +200,7 @@ bash "$SCRIPT_DIR/scripts/setup/update-llama.sh"
 clear 2>/dev/null || true
 echo ""
 echo "  ============================================================"
-echo "   UNCENSORED AI STUDIO      |  Launching..."
+echo "   LOCAL STUDIO SCUOLA      |  Launching..."
 echo "  ============================================================"
 echo ""
 
@@ -221,15 +211,9 @@ if [[ "$FRONTEND_PORT" != "$REQUESTED_FRONTEND_PORT" ]]; then
 fi
 
 # Clear managed backend ports
-if command -v lsof >/dev/null 2>&1; then
-  lsof -t -i:8080 -i:"${LLM_PORT}" | xargs kill -9 >/dev/null 2>&1 || true
-elif command -v fuser >/dev/null 2>&1; then
-  fuser -k "8080/tcp" >/dev/null 2>&1 || true
-  fuser -k "${LLM_PORT}/tcp" >/dev/null 2>&1 || true
-fi
 
 # Start the server
-echo "  Starting Uncensored AI Studio..."
+echo "  Starting Local Studio Scuola..."
 export PATH="$NODE_DIR/bin:$PATH"
 export FRONTEND_PORT="$FRONTEND_PORT"
 
@@ -252,7 +236,6 @@ echo ""
 echo "  ============================================================"
 echo "   Running!"
 echo "   Web UI:     http://localhost:${FRONTEND_PORT}"
-echo "   GPU API:    Auto-selected by the app (starts at 8080)"
 echo "   Text API:   Starts when a GGUF model is loaded (port ${LLM_PORT})"
 echo "   Speech:     Managed locally by the app"
 echo "   TTS:        Managed locally by the app"

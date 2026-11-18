@@ -1,33 +1,42 @@
 import React, { memo, useState, useRef, useEffect, useCallback } from "react";
-import { Sun, Moon, Palette, Check, PanelLeft, Power, Loader2 } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Palette,
+  Check,
+  PanelLeft,
+  Power,
+  Loader2,
+} from "lucide-react";
 import { THEMES } from "../themes";
-import { getBackendStatus, getLlmStatus, stopServer, stopLlm } from "../services/api";
+import { getLlmStatus, stopLlm } from "../services/api";
 
 // "models/Gemma-4-E4B-Q5_K_M.gguf" -> "Gemma-4-E4B-Q5_K_M"
-const cleanModelName = (name) => String(name || "").split(/[\\/]/).pop().replace(/\.(safetensors|gguf|ckpt|bin)$/i, "");
+const cleanModelName = (name) =>
+  String(name || "")
+    .split(/[\\/]/)
+    .pop()
+    .replace(/\.(safetensors|gguf|ckpt|bin)$/i, "");
 
-const RUNTIME_LABELS = { image: "Image", text: "Chat" };
+const RUNTIME_LABELS = { text: "Chat" };
 
 function TopStatusBar({
   theme,
   setTheme,
   sidebarVisible,
   onToggleSidebar,
-  onImageUnloaded,
   onTextUnloaded,
 }) {
   // What the server actually has loaded, polled; the screens' own state only knows what was picked
-  const [loaded, setLoaded] = useState({ image: null, text: null });
+  const [loaded, setLoaded] = useState({ text: null });
   const [unloading, setUnloading] = useState(null);
 
   const refreshLoaded = useCallback(async () => {
-    const [image, text] = await Promise.all([
-      getBackendStatus().catch(() => null),
-      getLlmStatus().catch(() => null),
-    ]);
+    const text = await getLlmStatus().catch(() => null);
     setLoaded({
-      image: image?.ready ? cleanModelName(image.settings?.model) || "Image model" : null,
-      text: text?.ready ? cleanModelName(text.settings?.model) || "Chat model" : null,
+      text: text?.ready
+        ? cleanModelName(text.settings?.model) || "Chat model"
+        : null,
     });
   }, []);
 
@@ -40,13 +49,8 @@ function TopStatusBar({
   const unload = async (kind) => {
     setUnloading(kind);
     try {
-      if (kind === "image") {
-        await stopServer();
-        onImageUnloaded?.();
-      } else {
-        await stopLlm();
-        onTextUnloaded?.();
-      }
+      await stopLlm();
+      onTextUnloaded?.();
     } catch (err) {
       console.error(`Failed to unload the ${kind} model:`, err);
     } finally {
@@ -55,7 +59,7 @@ function TopStatusBar({
     }
   };
 
-  const loadedKinds = ["image", "text"].filter((kind) => loaded[kind]);
+  const loadedKinds = ["text"].filter((kind) => loaded[kind]);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -89,14 +93,19 @@ function TopStatusBar({
         {loadedKinds.length === 0 ? (
           <div className="current-model-info status-pill">
             <div className="status-indicator offline" />
-            <span>No model loaded</span>
+            <span>Nessun modello caricato</span>
           </div>
         ) : (
           loadedKinds.map((kind) => (
-            <div key={kind} className="current-model-info status-pill status-pill-loaded">
+            <div
+              key={kind}
+              className="current-model-info status-pill status-pill-loaded"
+            >
               <div className="status-indicator" />
               <span>{RUNTIME_LABELS[kind]}</span>
-              <span className="status-pill-model" title={loaded[kind]}>{loaded[kind]}</span>
+              <span className="status-pill-model" title={loaded[kind]}>
+                {loaded[kind]}
+              </span>
               <button
                 type="button"
                 className="status-pill-unload"
@@ -105,7 +114,15 @@ function TopStatusBar({
                 aria-label={`Unload ${loaded[kind]}`}
                 title="Unload to free memory"
               >
-                {unloading === kind ? <Loader2 size={13} className="status-pill-spin" aria-hidden="true" /> : <Power size={13} aria-hidden="true" />}
+                {unloading === kind ? (
+                  <Loader2
+                    size={13}
+                    className="status-pill-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Power size={13} aria-hidden="true" />
+                )}
               </button>
             </div>
           ))
@@ -123,7 +140,10 @@ function TopStatusBar({
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <div ref={menuRef} style={{ position: "relative", display: "inline-block" }}>
+        <div
+          ref={menuRef}
+          style={{ position: "relative", display: "inline-block" }}
+        >
           <button
             type="button"
             aria-label="Choose a color theme"
@@ -134,7 +154,7 @@ function TopStatusBar({
           >
             <Palette size={18} />
           </button>
-          
+
           {showThemeMenu && (
             <div className="theme-dropdown-menu">
               <div className="theme-dropdown-header">Select Theme</div>
@@ -150,13 +170,42 @@ function TopStatusBar({
                       setShowThemeMenu(false);
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        width: "100%",
+                      }}
+                    >
                       <div style={{ display: "flex", gap: "2px" }}>
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: t.primary }} />
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: t.secondary }} />
+                        <div
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: t.primary,
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: t.secondary,
+                          }}
+                        />
                       </div>
                       <span className="theme-name-text">{t.name}</span>
-                      {isActive && <Check size={12} style={{ marginLeft: "auto", color: "var(--md-sys-color-primary)" }} />}
+                      {isActive && (
+                        <Check
+                          size={12}
+                          style={{
+                            marginLeft: "auto",
+                            color: "var(--md-sys-color-primary)",
+                          }}
+                        />
+                      )}
                     </div>
                   </button>
                 );
@@ -164,8 +213,6 @@ function TopStatusBar({
             </div>
           )}
         </div>
-
-
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ try {
     $required = $match.Matches[0].Groups[1].Value
 
     $stale = $null
-    foreach ($server in Get-ChildItem -Path $llmRoot -Filter "llama-server.exe" -Recurse -Depth 1 -File -ErrorAction SilentlyContinue) {
+    foreach ($server in Get-ChildItem -Path (Join-Path $llmRoot "cpu") -Filter "llama-server.exe" -File -ErrorAction SilentlyContinue) {
         $stamp = Join-Path $server.DirectoryName ".llama-release"
         $installed = if (Test-Path $stamp) { (Get-Content $stamp -Raw).Trim() } else { "" }
         if ($installed -ne $required) {

@@ -150,25 +150,6 @@ function Install-LlamaArchive {
     }
     Remove-Item $archive, $extract -Recurse -Force -ErrorAction SilentlyContinue
 
-    if ($Variant -eq "cuda") {
-        $cudartAsset = "cudart-llama-bin-win-cuda-12.4-x64.zip"
-        $cudartArchive = Join-Path $toolsDir $cudartAsset
-        $cudartExtract = Join-Path $toolsDir "llama-cudart-extract"
-        $cudartUrl = "https://github.com/ggml-org/llama.cpp/releases/download/$Release/$cudartAsset"
-
-        Remove-Item $cudartArchive, $cudartExtract -Recurse -Force -ErrorAction SilentlyContinue
-
-        Download-File -Url $cudartUrl -DestPath $cudartArchive -Label "llama.cpp CUDA runtime library ($Release)"
-
-        Write-Host "   >>  Extracting CUDA runtime libraries..."
-        Expand-Archive -Path $cudartArchive -DestinationPath $cudartExtract -Force
-
-        Get-ChildItem $cudartExtract -Recurse -File | ForEach-Object {
-            Copy-Item $_.FullName (Join-Path $dest $_.Name) -Force
-        }
-        Remove-Item $cudartArchive, $cudartExtract -Recurse -Force -ErrorAction SilentlyContinue
-    }
-
     if (-not (Test-Path $server)) {
         throw "llama-server.exe was not found after extracting $AssetName"
     }
@@ -176,61 +157,4 @@ function Install-LlamaArchive {
     Write-Host "   OK  llama.cpp $Variant backend installed."
 }
 
-function Try-InstallLlamaArchive {
-    param([string]$Variant, [string]$AssetName, [string]$Reason)
-
-    try {
-        Install-LlamaArchive -Variant $Variant -AssetName $AssetName
-    } catch {
-        Write-Host "   !!  Skipping optional llama.cpp $Variant backend: $Reason" -ForegroundColor Yellow
-        Write-Host "       $($_.Exception.Message)" -ForegroundColor DarkYellow
-    }
-}
-
-$hasNvidia = $false
-try {
-    $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
-    foreach ($gpu in $gpus) {
-        if ($gpu.Name -like "*NVIDIA*") {
-            $hasNvidia = $true
-        }
-    }
-} catch {}
-if (-not $hasNvidia) {
-    try {
-        & nvidia-smi *> $null
-        if ($LASTEXITCODE -eq 0) { $hasNvidia = $true }
-    } catch {}
-}
-
-if ($hasNvidia) {
-    Try-InstallLlamaArchive -Variant "cuda" -AssetName "llama-$Release-bin-win-cuda-12.4-x64.zip" -Reason "NVIDIA CUDA acceleration"
-}
-
-$hasAmd = $false
-try {
-    $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
-    foreach ($gpu in $gpus) {
-        if ($gpu.Name -like "*AMD*" -or $gpu.Name -like "*Radeon*") {
-            $hasAmd = $true
-        }
-    }
-} catch {}
-if ($hasAmd) {
-    Try-InstallLlamaArchive -Variant "hip" -AssetName "llama-$Release-bin-win-rocm-10.0-x64.zip" -Reason "AMD HIP acceleration"
-}
-# Intel Arc/Graphics detection for SYCL backend
-$hasIntel = $false
-try {
-    $gpus = Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue
-    foreach ($gpu in $gpus) {
-        if ($gpu.Name -like "*Intel*") {
-            $hasIntel = $true
-        }
-    }
-} catch {}
-if ($hasIntel) {
-    Try-InstallLlamaArchive -Variant "sycl" -AssetName "llama-$Release-bin-win-sycl-x64.zip" -Reason "Intel SYCL acceleration"
-}
-Install-LlamaArchive -Variant "vulkan" -AssetName "llama-$Release-bin-win-vulkan-x64.zip"
 Install-LlamaArchive -Variant "cpu" -AssetName "llama-$Release-bin-win-cpu-x64.zip"
