@@ -74,3 +74,11 @@ Il codice mantiene la licenza MIT e l’attribuzione del progetto originale in [
 Per aggiornare una vecchia installazione vocale, avvia nuovamente il launcher: rileva e installa il fonemizzatore italiano mancante. Il runtime include eSpeak NG multilingue (`@echogarden/espeak-ng-emscripten`, GPL-3.0), senza installazioni globali. Le vecchie registrazioni restano riproducibili; le preferenze di una voce inglese passano a Sara.
 
 Verifica v0.2.1 (18 novembre 2026): 32 test superati, build e controlli statici riusciti. Sono stati generati due audio reali con Kokoro Q8 su CPU (Sara: 5,575 s; Nicola: 6 s), con un testo italiano di prova; Nicola è stato verificato con download remoti disabilitati e soli pesi in cache. La velocità sui portatili del laboratorio resta da misurare.
+
+## Glossario e previsione sul PC corrente
+
+Nella pagina Modelli, **Capire i termini** apre un glossario ricercabile con Heretic, abliteration, instruct, quantizzazione e ricette come Q4_K_M. Le schede delle versioni includono **Come potrebbe girare su questo PC?**, aggiornato con la RAM libera della telemetria locale e con la quantizzazione selezionata. L'opzione immagini aggiunge il proiettore al budget.
+
+La previsione è un intervallo prudenziale, non una misura: pesi × 1,05–1,25 più 0,65–1,75 GiB per cache/buffer/runtime con il profilo fino a 2.048 token; con immagini, proiettore × 1,1–1,4 più 0,5–1,5 GiB. Si riservano altri 0,5 GiB della RAM libera. Questi coefficienti sono ipotesi di pianificazione non calibrate su ogni architettura e possono sottostimare o sovrastimare il consumo. Le classi di carico dipendono da file, immagini e thread disponibili, senza attribuire alla sola sigla della CPU una velocità certa. La stima non abilita o blocca i download.
+
+La velocità dipende anche da banda della memoria, disco, temperatura, architettura e carico del sistema; per questo l'app non inventa token/s. Per una misura ripetibile si può usare [llama-bench](https://github.com/ggml-org/llama.cpp/blob/master/tools/llama-bench/README.md), distinguendo lettura del prompt e generazione. La RAM libera include eventuali modelli già caricati: liberarli prima di confrontare le versioni rende il confronto più utile. Il glossario e la stima funzionano offline.

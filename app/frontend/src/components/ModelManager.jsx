@@ -1,3 +1,4 @@
+import ModelGlossary from "./ModelGlossary";
 import ChatModelCard, { ModelFeatures } from "./ChatModelCard";
 import { describeUiError } from "../utils/uiError";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -19,7 +20,7 @@ import {
 import "../styles/school.css";
 
 const MODES = { text: "Chat", speech: "Trascrizione", tts: "Voce" };
-export default function ModelManager({ specs, activeTab, showConfirm }) {
+export default function ModelManager({ specs, telemetry, activeTab, showConfirm }) {
   const [mode, setMode] = useState("text");
   const [models, setModels] = useState({ text: [], speech: [], tts: [] });
   const [download, setDownload] = useState({ active: false });
@@ -120,6 +121,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
         Modelli gratuiti eseguiti su questo computer. Internet serve per il
         download iniziale; nessun account o chiave API.
       </p>
+      <ModelGlossary />
       <div className="school-tabs" role="group" aria-label="Tipo di modello">
         {Object.entries(MODES).map(([id, label]) => (
           <button
@@ -202,7 +204,7 @@ export default function ModelManager({ specs, activeTab, showConfirm }) {
       <h2>Consigliati</h2>
       <div className="school-grid">
         {catalog.map((model) => mode === "text" ? (
-          <ChatModelCard key={model.id || model.filename} model={model} installedNames={names} locked={locked} install={install} />
+          <ChatModelCard key={model.id || model.filename} model={model} specs={specs} telemetry={telemetry} installedNames={names} locked={locked} install={install} />
         ) : (
           <article className="school-card" key={model.filename}>
             <strong>{model.name}</strong>

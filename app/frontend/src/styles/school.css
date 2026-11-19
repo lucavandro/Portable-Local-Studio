@@ -75,3 +75,17 @@
 .model-features span { border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 4px 8px; font-size: .8rem; }
 .school-card select { max-width: 100%; }
 .school-card a { color: var(--md-sys-color-primary); }
+
+.model-glossary, .model-fit { border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px; }
+.model-glossary { margin: 16px 0; }
+.model-glossary summary, .model-fit summary { cursor: pointer; font-weight: 600; line-height: 1.5; }
+.model-fit summary span { display: block; font-weight: 400; font-size: .85rem; margin-top: 6px; }
+.model-glossary label { display: block; margin: 14px 0; }
+.model-glossary input { display: block; box-sizing: border-box; width: 100%; padding: 10px; font: inherit; color: inherit; background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 8px; margin-top: 8px; }
+.model-glossary dl > div { margin: 16px 0; }
+.model-glossary dt { font-weight: 600; }
+.model-glossary dd { margin: 6px 0 0; line-height: 1.6; }
+.school-card .model-fit p { margin-top: 12px; font-size: .9rem; }
+.school-card .model-fit-checkbox { display: flex; flex-direction: row; align-items: flex-start; margin-top: 12px; }
+.model-fit-method { font-size: .8rem !important; }
+.model-fit summary:focus-visible, .model-glossary summary:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 4px; }

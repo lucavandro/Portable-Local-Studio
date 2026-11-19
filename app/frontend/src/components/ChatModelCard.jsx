@@ -1,3 +1,4 @@
+import ModelFit from "./ModelFit";
 import { useState } from "react";
 
 export function ModelFeatures({ model }) {
@@ -8,7 +9,7 @@ export function ModelFeatures({ model }) {
   </div>;
 }
 
-export default function ChatModelCard({ model, installedNames, locked, install }) {
+export default function ChatModelCard({ model, specs, telemetry, installedNames, locked, install }) {
   const versions = model.variants || [model];
   const preferred = versions.find((entry) => entry.quantization === model.preferredQuantization) || versions[0];
   const [filename, setFilename] = useState(preferred?.filename || "");
@@ -29,7 +30,7 @@ export default function ChatModelCard({ model, installedNames, locked, install }
     </label>
     {selected && <>
       <span>{selected.approxSize} · {selected.sizeBytes?.toLocaleString("it-IT")} byte</span>
-      {selected.sizeBytes > 3 * 1024 ** 3 && <p>Impegnativo su 8 GB di RAM. Il file è solo una parte della memoria necessaria.</p>}
+      <ModelFit variant={selected} model={model} specs={specs} telemetry={telemetry} />
       <button className="m3-btn m3-btn-filled" disabled={locked || installed} onClick={() => install(selected)}>
         {installed ? "Versione installata" : "Scarica questa versione"}
       </button>
